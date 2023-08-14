@@ -1,15 +1,13 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom';
 import './index.css';
 import { RouterProvider } from "react-router-dom";
 import { router } from './routers/index'
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root')
-);
+const root = document.getElementById('root')
 
-root.render(
+ReactDOM.render((
   <React.StrictMode>
     <RouterProvider router={router} />
   </React.StrictMode>
-);
+), root);

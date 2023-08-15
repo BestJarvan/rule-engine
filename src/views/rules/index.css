@@ -1,0 +1,6 @@
+.query-import-input {
+  width: calc(100% - 120px);
+}
+.query-wrap {
+  padding: 20px;
+}

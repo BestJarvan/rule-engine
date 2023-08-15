@@ -7,6 +7,7 @@ import loadConfig from "./config";
 // import loadedInitValue from "./init_value";
 // import loadedInitLogic from "./init_logic";
 import clone from "clone";
+import './index.css'
 
 const stringify = JSON.stringify;
 const {
@@ -252,7 +253,7 @@ const DemoQueryBuilder = () => {
   };
 
   return (
-    <div>
+    <div className="query-wrap">
       <div>
         <button onClick={resetValue}>reset</button>
         <button onClick={clearValue}>clear</button>
@@ -269,7 +270,7 @@ const DemoQueryBuilder = () => {
 
       <div className="query-import-spel">
         SpEL:
-        <input type="text" size={150} value={state.spelStr} onChange={onChangeSpelStr} />
+        <input className="query-import-input" type="text" value={state.spelStr} onChange={onChangeSpelStr} />
         <button onClick={importFromSpel}>import</button>
         <br />
         { state.spelErrors.length > 0 

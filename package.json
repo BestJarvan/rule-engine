@@ -2,12 +2,20 @@
   "name": "helper-rule-engine",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "serve": "cross-env NODE_ENV=serve react-scripts start",
+    "start": "cross-env NODE_ENV=serve react-scripts start",
+    "build": "cross-env NODE_ENV=master react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
   "dependencies": {
     "@ant-design/icons": "^5.2.5",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "antd": "^4.16.13",
+    "axios": "^1.4.0",
     "clone": "2.1.2",
     "lodash": "^4.17.21",
     "moment": "2.29.1",
@@ -18,14 +26,8 @@
     "react-scripts": "5.0.1"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "less": "4.1.1"
-  },
-  "scripts": {
-    "serve": "react-scripts start",
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [

@@ -6,7 +6,6 @@ import {
 import moment from "moment";
 
 import AntdConfig from 'react-awesome-query-builder/lib/config/antd';
-import 'antd/dist/antd.min.css'; // or 'antd/dist/antd.less'
 // import "react-awesome-query-builder/lib/css/antd.less";
 
 import 'react-awesome-query-builder/lib/css/styles.css';

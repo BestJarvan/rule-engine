@@ -4,6 +4,7 @@ import {
 import Index from '../views/index';
 import ErrorPage from '../views/error'
 import Rules from '../views/rules/index';
+import Home from '../views/home';
 
 export const router = createBrowserRouter([
   {
@@ -11,6 +12,10 @@ export const router = createBrowserRouter([
     element: <Index />,
     errorElement: <ErrorPage />,
     children: [
+      {
+        path: "",
+        element: <Home />,
+      },
       {
         path: "rules",
         element: <Rules />,

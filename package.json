@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "cross-env NODE_ENV=serve react-scripts start",
-    "start": "cross-env NODE_ENV=serve react-scripts start",
-    "build:test": "cross-env NODE_ENV=serve react-scripts build",
-    "build:pre": "cross-env NODE_ENV=pre react-scripts build",
-    "build:master": "cross-env NODE_ENV=master react-scripts build",
+    "serve": "cross-env REACT_APP_ENV=serve react-scripts start",
+    "start": "cross-env REACT_APP_ENV=serve react-scripts start",
+    "build:test": "cross-env REACT_APP_ENV=serve react-scripts build",
+    "build:pre": "cross-env REACT_APP_ENV=pre react-scripts build",
+    "build:master": "cross-env REACT_APP_ENV=master react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

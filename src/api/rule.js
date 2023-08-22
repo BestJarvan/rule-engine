@@ -1,10 +1,20 @@
 import request from './axios'
 
-export function fetchRulesData(params) {
+// 查询所有事实对象
+export function fetchRulesFact(data) {
   return request({
-    url: `/customer/advertisement/list`,
-    method: 'get',
-    params
+    url: '/pay-center/rule/fact/all',
+    method: 'post',
+    data
+  })
+}
+
+// 查询单个对象及字段
+export function fetchRulesFactOne(data) {
+  return request({
+    url: '/pay-center/rule/fact/one',
+    method: 'post',
+    data
   })
 }
 

@@ -1,9 +1,13 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
+  Button, InputNumber, Form, Input, Switch, Select,
+} from 'antd';
+import {
   Query, Builder, Utils, 
 } from "react-awesome-query-builder";
 import throttle from "lodash/throttle";
 import loadConfig from "./config";
+import { fetchRulesFact, fetchRulesFactOne } from '../../api/rule'
 // import loadedInitValue from "./init_value";
 // import loadedInitLogic from "./init_logic";
 import clone from "clone";
@@ -46,7 +50,6 @@ const updateEvent = new CustomEvent("update", { detail: {
 } });
 window.dispatchEvent(updateEvent);
 
-
 const DemoQueryBuilder = () => {
   const memo = {};
 
@@ -54,16 +57,30 @@ const DemoQueryBuilder = () => {
     tree: initTree, 
     config: loadedConfig,
     spelStr: "",
-    spelErrors: []
+    spelErrors: [],
   });
 
+  const [factList, setFactList] = useState([])
+
   useEffect(() => {
+    fetchAllRulesObj()
     window.addEventListener("update", onConfigChanged);
     return () => {
       window.removeEventListener("update", onConfigChanged);
     };
-  });
+    // eslint-disable-next-line
+  }, [factList.length])
 
+  // 获取所有可选事实对象
+  const fetchAllRulesObj = () => {
+    fetchRulesFact({}).then(({ data }) => {
+      const list = data.map(v => ({
+        value: v.id,
+        label: v.objName
+      }))
+      setFactList(list);
+    })
+  }
 
   const onConfigChanged = (e) => {
     const {detail: {config, _initTree, _initValue}} = e
@@ -142,6 +159,12 @@ const DemoQueryBuilder = () => {
   const updateResult = throttle(() => {
     setState(prevState => ({...prevState, tree: memo.immutableTree, config: memo.config}));
   }, 100);
+
+  const handleFactChange = (factObjId) => {
+    fetchRulesFactOne({ factObjId }).then(({ data }) => {
+      console.log('data: ', data);
+    })
+  }
 
 
   const renderResult = ({tree: immutableTree, config}) => {
@@ -252,13 +275,105 @@ const DemoQueryBuilder = () => {
     );
   };
 
+  const renderForm = () => {
+    const onFinish = (values) => {
+      console.log('Success:', values);
+    };
+    const onFinishFailed = (errorInfo) => {
+      console.log('Failed:', errorInfo);
+    };
+
+    return (
+      <Form
+        name="basic"
+        initialValues={{
+          password: 0,
+          status: true
+        }}
+        labelAlign="left"
+        labelCol={{ style: { width: 100 } }}
+        onFinish={onFinish}
+        onFinishFailed={onFinishFailed}
+        autoComplete="off"
+      >
+        <Form.Item
+          label="规则名称"
+          name="name"
+          rules={[
+            {
+              required: true,
+              message: '请输入规则名称',
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          label="优先级"
+          name="password"
+          rules={[
+            {
+              required: true,
+              message: '请输入优先级',
+            },
+          ]}
+        >
+          <InputNumber min={0} max={999} />
+        </Form.Item>
+
+        <Form.Item
+          label="事实对象"
+          name="fact"
+          rules={[
+            {
+              required: true,
+              message: '请选择事实对象',
+            },
+          ]}
+        >
+          <Select
+            style={{
+              width: 120,
+            }}
+            onChange={handleFactChange}
+            options={factList}
+          />
+        </Form.Item>
+        
+        <Form.Item
+          label="是否启用"
+          name="status"
+          valuePropName="checked"
+          rules={[
+            {
+              required: true,
+              message: '请选择是否启用',
+            },
+          ]}
+        >
+          <Switch defaultChecked checkedChildren="启用" unCheckedChildren="禁用" />
+        </Form.Item>
+
+        <Form.Item>
+          <Button type="primary" htmlType="submit">
+            保存
+          </Button>
+        </Form.Item>
+      </Form>
+    )
+  }
+
   return (
     <div className="query-wrap">
+      <div className="query-form">
+        {renderForm()}
+      </div>
       <div>
-        <button onClick={resetValue}>reset</button>
-        <button onClick={clearValue}>clear</button>
-        <button onClick={validate}>validate</button>
-        <button onClick={switchShowLock}>show lock: {state.config.settings.showLock ? "on" : "off"}</button>
+        <Button onClick={resetValue}>重置</Button>
+        <Button onClick={clearValue}>清空</Button>
+        <Button onClick={validate}>校验</Button>
+        <Button onClick={switchShowLock}>显示锁定: {state.config.settings.showLock ? "显示" : "隐藏"}</Button>
       </div>
       
       <Query
@@ -271,7 +386,7 @@ const DemoQueryBuilder = () => {
       <div className="query-import-spel">
         SpEL:
         <input className="query-import-input" type="text" value={state.spelStr} onChange={onChangeSpelStr} />
-        <button onClick={importFromSpel}>import</button>
+        <button onClick={importFromSpel}>导入规则</button>
         <br />
         { state.spelErrors.length > 0 
             && <pre style={preErrorStyle}>

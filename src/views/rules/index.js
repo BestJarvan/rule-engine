@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  Button, InputNumber, Form, Input, Switch, Select, message,
+  Button, InputNumber, Form, Input, Select, message,
 } from 'antd';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -8,7 +8,12 @@ import {
 } from "react-awesome-query-builder";
 import throttle from "lodash/throttle";
 import loadConfig from "./config";
-import { fetchRulesFact, fetchRulesFactOne, saveRules } from '../../api/rule'
+import {
+  fetchRulesFact,
+  fetchRulesFactOne,
+  fetchRuleDetail,
+  saveRules,
+} from '../../api/rule'
 // import loadedInitValue from "./init_value";
 // import loadedInitLogic from "./init_logic";
 import clone from "clone";
@@ -57,8 +62,8 @@ const DemoQueryBuilder = () => {
   const [form] = Form.useForm();
   const [searchParams] = useSearchParams()
   const isEdit = searchParams.get('type') === 'edit'
-  console.log('isEdit: ', isEdit);
   const scene = searchParams.get('scene')
+  const ruleId = searchParams.get('id')
 
   const [state, setState] = useState({
     tree: initTree, 
@@ -79,18 +84,41 @@ const DemoQueryBuilder = () => {
   }, [factList.length])
 
   // 获取所有可选事实对象
-  const fetchAllRulesObj = () => {
-    fetchRulesFact({}).then(({ data }) => {
+  const fetchAllRulesObj = async () => {
+    try {
+      const { data } = await fetchRulesFact({})
       const list = data.map(v => ({
         value: v.id,
         label: v.objName
       }))
       setFactList(list);
-      fetchFields(list[0].value)
+      if (isEdit) {
+        fetchRulesDetail()
+      } else {
+        fetchFields(list[0].value)
+        form.setFieldsValue({
+          factObjId: list[0].value
+        })
+      }
+    } catch (error) {
+      console.log('error: ', error);
+    }
+  }
+
+  const fetchRulesDetail = async () => {
+    try {
+      const { data } = await fetchRuleDetail({ id: ruleId })
+      console.log('data: ', data);
+      fetchFields(data.factObjId, data.expression)
+
       form.setFieldsValue({
-        fact: list[0].value
+        factObjId: data.factObjId,
+        ruleName: data.ruleName,
+        priority: data.priority,
+        simpleRuleValue: data.simpleRuleValue
       })
-    })
+    } catch (error) {
+    }
   }
 
   const onConfigChanged = (e) => {
@@ -176,9 +204,9 @@ const DemoQueryBuilder = () => {
     fetchFields(factObjId)
   }
 
-  const fetchFields = (factObjId) => {
-    fetchRulesFactOne({ factObjId }).then(({ data }) => {
-      console.log('data: ', data);
+  const fetchFields = async (factObjId, spel) => {
+    try {
+      const { data } = await fetchRulesFactOne({ factObjId })
       const obj = {}
       data.fields.forEach(item => {
         obj[`data.${item.factFieldCode}`] = {
@@ -187,13 +215,20 @@ const DemoQueryBuilder = () => {
         }
       })
       console.log('obj: ', obj);
+      const stateObj = {
+        ...state, 
+      }
       const {config} = state
       config.fields = obj
-      setState({
-        ...state,
-        config
-      })
-    })
+      if (spel) {
+        const [tree, spelErrors] = loadFromSpel(spel, config);
+        stateObj['tree'] = tree ? checkTree(tree, config) : state.tree
+        stateObj['spelErrors'] = spelErrors
+      }
+      stateObj['config'] = config
+      setState(stateObj)
+    } catch (error) {
+    }
   }
 
 
@@ -323,7 +358,6 @@ const DemoQueryBuilder = () => {
         const { msg } = await saveRules(params)
         message.success(msg)
       } catch (error) {
-        console.log('error: ', error);
       }
     };
     const onFinishFailed = (errorInfo) => {
@@ -385,7 +419,7 @@ const DemoQueryBuilder = () => {
 
         <Form.Item
           label="事实对象"
-          name="fact"
+          name="factObjId"
           rules={[
             {
               required: true,
@@ -402,7 +436,7 @@ const DemoQueryBuilder = () => {
           />
         </Form.Item>
         
-        <Form.Item
+        {/* <Form.Item
           label="是否启用"
           name="status"
           valuePropName="checked"
@@ -414,7 +448,7 @@ const DemoQueryBuilder = () => {
           ]}
         >
           <Switch defaultChecked checkedChildren="启用" unCheckedChildren="禁用" />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item>
           <Button type="primary" htmlType="submit">

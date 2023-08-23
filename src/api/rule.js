@@ -18,6 +18,15 @@ export function fetchRulesFactOne(data) {
   })
 }
 
+// 查询规则详情
+export function fetchRuleDetail(data) {
+  return request({
+    url: '/pay-center/rule/queryOne',
+    method: 'post',
+    data
+  })
+}
+
 // 保存规则
 export function saveRules(data) {
   return request({

@@ -457,6 +457,9 @@ const DemoQueryBuilder = () => {
           <Button type="primary" htmlType="submit">
             保存
           </Button>
+          <Button className="btn-margin">
+            返回
+          </Button>
         </Form.Item>
       </Form>
     )
@@ -469,9 +472,9 @@ const DemoQueryBuilder = () => {
       </div>
       <div>
         <Button onClick={resetValue}>重置</Button>
-        <Button onClick={clearValue}>清空</Button>
-        <Button onClick={validate}>校验</Button>
-        <Button onClick={switchShowLock}>显示锁定: {state.config.settings.showLock ? "显示" : "隐藏"}</Button>
+        <Button className="btn-margin" onClick={clearValue}>清空</Button>
+        <Button className="btn-margin" onClick={validate}>校验</Button>
+        <Button className="btn-margin" onClick={switchShowLock}>显示锁定: {state.config.settings.showLock ? "显示" : "隐藏"}</Button>
       </div>
       
       <Query

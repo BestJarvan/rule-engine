@@ -355,6 +355,9 @@ const DemoQueryBuilder = () => {
           scene,
           expression: spel
         }
+        if (ruleId) {
+          params['id'] = ruleId
+        }
         const { msg } = await saveRules(params)
         message.success(msg)
       } catch (error) {

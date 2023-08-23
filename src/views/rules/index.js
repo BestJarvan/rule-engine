@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import {
   Button, InputNumber, Form, Input, Select, message,
 } from 'antd';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Query, Builder, Utils, 
 } from "react-awesome-query-builder";
@@ -61,6 +61,7 @@ const DemoQueryBuilder = () => {
   const memo = {};
   const [form] = Form.useForm();
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const isEdit = searchParams.get('type') === 'edit'
   const scene = searchParams.get('scene')
   const ruleId = searchParams.get('id')
@@ -229,6 +230,10 @@ const DemoQueryBuilder = () => {
       setState(stateObj)
     } catch (error) {
     }
+  }
+
+  const jumpBack = () => {
+    navigate(-1)
   }
 
 
@@ -457,7 +462,7 @@ const DemoQueryBuilder = () => {
           <Button type="primary" htmlType="submit">
             保存
           </Button>
-          <Button className="btn-margin">
+          <Button className="btn-margin" onClick={jumpBack}>
             返回
           </Button>
         </Form.Item>

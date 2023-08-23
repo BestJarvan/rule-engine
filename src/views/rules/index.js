@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  Button, InputNumber, Form, Input, Switch, Select,
+  Button, InputNumber, Form, Input, Switch, Select, message,
 } from 'antd';
+import { useSearchParams } from 'react-router-dom';
 import {
   Query, Builder, Utils, 
 } from "react-awesome-query-builder";
 import throttle from "lodash/throttle";
 import loadConfig from "./config";
-import { fetchRulesFact, fetchRulesFactOne } from '../../api/rule'
+import { fetchRulesFact, fetchRulesFactOne, saveRules } from '../../api/rule'
 // import loadedInitValue from "./init_value";
 // import loadedInitLogic from "./init_logic";
 import clone from "clone";
@@ -41,6 +42,7 @@ let initTree;
 initTree = checkTree(loadTree(initValue), loadedConfig);
 // initTree = checkTree(loadFromJsonLogic(initLogic, loadedConfig), loadedConfig); // <- this will work same  
 
+console.log('loadedConfig: ', loadedConfig);
 
 // Trick to hot-load new config when you edit `config.tsx`
 const updateEvent = new CustomEvent("update", { detail: {
@@ -52,6 +54,11 @@ window.dispatchEvent(updateEvent);
 
 const DemoQueryBuilder = () => {
   const memo = {};
+  const [form] = Form.useForm();
+  const [searchParams] = useSearchParams()
+  const isEdit = searchParams.get('type') === 'edit'
+  console.log('isEdit: ', isEdit);
+  const scene = searchParams.get('scene')
 
   const [state, setState] = useState({
     tree: initTree, 
@@ -79,6 +86,10 @@ const DemoQueryBuilder = () => {
         label: v.objName
       }))
       setFactList(list);
+      fetchFields(list[0].value)
+      form.setFieldsValue({
+        fact: list[0].value
+      })
     })
   }
 
@@ -161,8 +172,27 @@ const DemoQueryBuilder = () => {
   }, 100);
 
   const handleFactChange = (factObjId) => {
+    clearValue()
+    fetchFields(factObjId)
+  }
+
+  const fetchFields = (factObjId) => {
     fetchRulesFactOne({ factObjId }).then(({ data }) => {
       console.log('data: ', data);
+      const obj = {}
+      data.fields.forEach(item => {
+        obj[`data.${item.factFieldCode}`] = {
+          label: item.factFieldName,
+          type: item.fieldType,
+        }
+      })
+      console.log('obj: ', obj);
+      const {config} = state
+      config.fields = obj
+      setState({
+        ...state,
+        config
+      })
     })
   }
 
@@ -276,8 +306,25 @@ const DemoQueryBuilder = () => {
   };
 
   const renderForm = () => {
-    const onFinish = (values) => {
+    const onFinish = async (values) => {
       console.log('Success:', values);
+      const {tree: immutableTree, config} = state
+      const [spel] = _spelFormat(immutableTree, config)
+      if (!spel) {
+        message.error('请配置至少一条规则')
+        return
+      }
+      try {
+        const params = {
+          ...values,
+          scene,
+          expression: spel
+        }
+        const { msg } = await saveRules(params)
+        message.success(msg)
+      } catch (error) {
+        console.log('error: ', error);
+      }
     };
     const onFinishFailed = (errorInfo) => {
       console.log('Failed:', errorInfo);
@@ -287,9 +334,10 @@ const DemoQueryBuilder = () => {
       <Form
         name="basic"
         initialValues={{
-          password: 0,
-          status: true
+          priority: 0,
+          status: true,
         }}
+        form={form}
         labelAlign="left"
         labelCol={{ style: { width: 100 } }}
         onFinish={onFinish}
@@ -298,7 +346,7 @@ const DemoQueryBuilder = () => {
       >
         <Form.Item
           label="规则名称"
-          name="name"
+          name="ruleName"
           rules={[
             {
               required: true,
@@ -311,7 +359,7 @@ const DemoQueryBuilder = () => {
 
         <Form.Item
           label="优先级"
-          name="password"
+          name="priority"
           rules={[
             {
               required: true,
@@ -320,6 +368,19 @@ const DemoQueryBuilder = () => {
           ]}
         >
           <InputNumber min={0} max={999} />
+        </Form.Item>
+
+        <Form.Item
+          label="返回结果"
+          name="simpleRuleValue"
+          rules={[
+            {
+              required: true,
+              message: '请输入返回结果',
+            },
+          ]}
+        >
+          <Input />
         </Form.Item>
 
         <Form.Item

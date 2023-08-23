@@ -18,3 +18,12 @@ export function fetchRulesFactOne(data) {
   })
 }
 
+// 保存规则
+export function saveRules(data) {
+  return request({
+    url: '/pay-center/rule/save',
+    method: 'post',
+    data
+  })
+}
+

@@ -11,7 +11,6 @@ import 'react-awesome-query-builder/lib/css/compact_styles.css'; //optional, for
 
 const ruleConfig = () => {
   const InitialConfig = AntdConfig;
-  console.log('InitialConfig: ', InitialConfig);
 
   const conjunctions = {
     ...InitialConfig.conjunctions,
@@ -117,8 +116,6 @@ const ruleConfig = () => {
       }
     },
   };
-
-  console.log(JSON.stringify(InitialConfig.types.text.widgets));
 
   const types = {
     ...InitialConfig.types,
@@ -303,7 +300,7 @@ const ruleConfig = () => {
     funcs,
     types,
   };
-  console.log('config: ', config);
+
   return config;
 };
 

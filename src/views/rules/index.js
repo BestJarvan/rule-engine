@@ -102,14 +102,12 @@ const DemoQueryBuilder = () => {
         })
       }
     } catch (error) {
-      console.log('error: ', error);
     }
   }
 
   const fetchRulesDetail = async () => {
     try {
       const { data } = await fetchRuleDetail({ id: ruleId })
-      console.log('data: ', data);
       fetchFields(data.factObjId, data.expression)
 
       form.setFieldsValue({
@@ -347,7 +345,6 @@ const DemoQueryBuilder = () => {
 
   const renderForm = () => {
     const onFinish = async (values) => {
-      console.log('Success:', values);
       const {tree: immutableTree, config} = state
       const [spel] = _spelFormat(immutableTree, config)
       if (!spel) {

@@ -1,13 +1,13 @@
 import merge from "lodash/merge";
 import {
   BasicFuncs,
-} from "react-awesome-query-builder";
+} from "@bestjarvan/helper-rule-engine";
 
-import AntdConfig from 'react-awesome-query-builder/lib/config/antd';
-// import "react-awesome-query-builder/lib/css/antd.less";
+import AntdConfig from '@bestjarvan/helper-rule-engine/lib/config/antd';
+// import "@bestjarvan/helper-rule-engine/lib/css/antd.less";
 
-import 'react-awesome-query-builder/lib/css/styles.css';
-import 'react-awesome-query-builder/lib/css/compact_styles.css'; //optional, for more compact styles
+import '@bestjarvan/helper-rule-engine/lib/css/styles.css';
+import '@bestjarvan/helper-rule-engine/lib/css/compact_styles.css'; //optional, for more compact styles
 
 const ruleConfig = () => {
   const InitialConfig = AntdConfig;

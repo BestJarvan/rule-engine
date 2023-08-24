@@ -5,7 +5,7 @@ import {
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Query, Builder, Utils, 
-} from "react-awesome-query-builder";
+} from "@bestjarvan/helper-rule-engine";
 import throttle from "lodash/throttle";
 import loadConfig from "./config";
 import {

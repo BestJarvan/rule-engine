@@ -63,7 +63,7 @@ const DemoQueryBuilder = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const isEdit = searchParams.get('type') === 'edit'
-  const scene = searchParams.get('scene')
+  const sceneCode = searchParams.get('scene')
   const ruleId = searchParams.get('id')
 
   const [state, setState] = useState({
@@ -357,7 +357,7 @@ const DemoQueryBuilder = () => {
       try {
         const params = {
           ...values,
-          scene,
+          sceneCode,
           expression: spel
         }
         if (ruleId) {

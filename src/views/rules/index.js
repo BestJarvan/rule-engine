@@ -116,6 +116,7 @@ const DemoQueryBuilder = () => {
         priority: data.priority,
         simpleRuleValue: data.simpleRuleValue
       })
+
     } catch (error) {
     }
   }
@@ -222,7 +223,9 @@ const DemoQueryBuilder = () => {
       if (spel) {
         const [tree, spelErrors] = loadFromSpel(spel, config);
         stateObj['tree'] = tree ? checkTree(tree, config) : state.tree
+        console.log('stateObj: ', stateObj);
         stateObj['spelErrors'] = spelErrors
+        initTree = stateObj['tree']
       }
       stateObj['config'] = config
       setState(stateObj)

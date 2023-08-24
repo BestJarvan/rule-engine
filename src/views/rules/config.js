@@ -11,6 +11,7 @@ import 'react-awesome-query-builder/lib/css/compact_styles.css'; //optional, for
 
 const ruleConfig = () => {
   const InitialConfig = AntdConfig;
+  console.log('InitialConfig: ', InitialConfig);
 
   const conjunctions = {
     ...InitialConfig.conjunctions,
@@ -117,6 +118,7 @@ const ruleConfig = () => {
     },
   };
 
+  console.log(JSON.stringify(InitialConfig.types.text.widgets));
 
   const types = {
     ...InitialConfig.types,
@@ -124,6 +126,68 @@ const ruleConfig = () => {
     text: {
       ...InitialConfig.types.text,
       excludeOperators: ["proximity"],
+      widgets: {
+        "text": {
+          "operators": [
+            "equal",
+          ],
+          "widgetProps": {},
+          "opProps": {}
+        },
+        "textarea": {
+          "operators": [
+            "equal",
+          ],
+          "widgetProps": {},
+          "opProps": {}
+        },
+        "field": {
+          "operators": [
+            "equal",
+          ]
+        }
+      }
+    },
+    number: {
+      ...InitialConfig.types.number,
+      widgets: {
+        "number": {
+          "operators": [
+            "equal",
+            "less",
+            "less_or_equal",
+            "greater",
+            "greater_or_equal",
+            "is_null",
+            "is_not_null"
+          ]
+        },
+        "slider": {
+          "operators": [
+            "equal",
+            "less",
+            "less_or_equal",
+            "greater",
+            "greater_or_equal",
+            "is_null",
+            "is_not_null"
+          ]
+        },
+        "rangeslider": {
+          "opProps": {
+            "between": {
+              "isSpecialRange": true
+            },
+            "not_between": {
+              "isSpecialRange": true
+            }
+          },
+          "operators": [
+            "is_null",
+            "is_not_null"
+          ]
+        }
+      }
     },
     boolean: merge(InitialConfig.types.boolean, {
       widgets: {
@@ -230,16 +294,16 @@ const ruleConfig = () => {
 
 
   const config = {
+    ...InitialConfig,
     conjunctions,
     operators,
     widgets,
-    types,
     settings,
     fields,
     funcs,
-    ...InitialConfig,
+    types,
   };
-
+  console.log('config: ', config);
   return config;
 };
 

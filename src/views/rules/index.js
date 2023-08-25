@@ -21,13 +21,7 @@ import './index.css'
 
 const stringify = JSON.stringify;
 const {
-  elasticSearchFormat,
-  jsonLogicFormat,
-  queryString,
-  _mongodbFormat,
-  _sqlFormat,
   _spelFormat,
-  getTree,
   checkTree,
   loadTree,
   uuid,
@@ -240,14 +234,7 @@ const DemoQueryBuilder = () => {
 
   const renderResult = ({tree: immutableTree, config}) => {
     const isValid = isValidTree(immutableTree);
-    const treeJs = getTree(immutableTree);
-    const {logic, data: logicData, errors: logicErrors} = jsonLogicFormat(immutableTree, config);
     const [spel, spelErrors] = _spelFormat(immutableTree, config);
-    const queryStr = queryString(immutableTree, config);
-    const humanQueryStr = queryString(immutableTree, config, true);
-    const [sql, sqlErrors] = _sqlFormat(immutableTree, config);
-    const [mongo, mongoErrors] = _mongodbFormat(immutableTree, config);
-    const elasticSearch = elasticSearchFormat(immutableTree, config);
 
     return (
       <div>
@@ -262,77 +249,6 @@ const DemoQueryBuilder = () => {
           }
           <pre style={preStyle}>
             {stringify(spel, undefined, 2)}
-          </pre>
-        </div>
-        <hr/>
-        <div>
-        stringFormat: 
-          <pre style={preStyle}>
-            {stringify(queryStr, undefined, 2)}
-          </pre>
-        </div>
-        <hr/>
-        <div>
-        humanStringFormat: 
-          <pre style={preStyle}>
-            {stringify(humanQueryStr, undefined, 2)}
-          </pre>
-        </div>
-        <hr/>
-        <div>
-        sqlFormat: 
-          { sqlErrors.length > 0 
-            && <pre style={preErrorStyle}>
-              {stringify(sqlErrors, undefined, 2)}
-            </pre> 
-          }
-          <pre style={preStyle}>
-            {stringify(sql, undefined, 2)}
-          </pre>
-        </div>
-        <hr/>
-        <div>
-          <a href="http://jsonlogic.com/play.html" target="_blank" rel="noopener noreferrer">jsonLogicFormat</a>: 
-          { logicErrors.length > 0 
-            && <pre style={preErrorStyle}>
-              {stringify(logicErrors, undefined, 2)}
-            </pre> 
-          }
-          { !!logic
-            && <pre style={preStyle}>
-              {"// Rule"}:<br />
-              {stringify(logic, undefined, 2)}
-              <br />
-              <hr />
-              {"// Data"}:<br />
-              {stringify(logicData, undefined, 2)}
-            </pre>
-          }
-        </div>
-        <hr/>
-        <div>
-        mongodbFormat: 
-          { mongoErrors.length > 0 
-            && <pre style={preErrorStyle}>
-              {stringify(mongoErrors, undefined, 2)}
-            </pre> 
-          }
-          <pre style={preStyle}>
-            {stringify(mongo, undefined, 2)}
-          </pre>
-        </div>
-        <hr/>
-        <div>
-        elasticSearchFormat: 
-          <pre style={preStyle}>
-            {stringify(elasticSearch, undefined, 2)}
-          </pre>
-        </div>
-        <hr/>
-        <div>
-        Tree: 
-          <pre style={preStyle}>
-            {stringify(treeJs, undefined, 2)}
           </pre>
         </div>
         {/* <hr/>

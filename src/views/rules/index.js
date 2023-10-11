@@ -206,6 +206,7 @@ const DemoQueryBuilder = () => {
     // setReturnList([])
     form.setFieldValue('factReturnAttr', void 0)
     form.setFieldValue('factReturnVal', void 0)
+    setReturnValueList([])
     fetchFields(factObjId)
   }
 

@@ -13,6 +13,9 @@ import {
   fetchRulesFactOne,
   fetchRuleDetail,
   saveRules,
+  fetchAttrList,
+  fetchAttrDetails,
+  fetchQueryPropertyUrlData,
 } from '../../api/rule'
 // import loadedInitValue from "./init_value";
 // import loadedInitLogic from "./init_logic";
@@ -67,7 +70,12 @@ const DemoQueryBuilder = () => {
     spelErrors: [],
   });
 
+  const [visibleItem, setVisibleItem] = useState(false)
+
+  const [returnDetail, setReturnDetail] = useState({})
   const [factList, setFactList] = useState([])
+  const [returnList, setReturnList] = useState([])
+  const [returnValueList, setReturnValueList] = useState([])
 
   useEffect(() => {
     fetchAllRulesObj()
@@ -195,7 +203,49 @@ const DemoQueryBuilder = () => {
 
   const handleFactChange = (factObjId) => {
     clearValue()
+    // setReturnList([])
+    form.setFieldValue('factReturnAttr', void 0)
+    form.setFieldValue('factReturnVal', void 0)
     fetchFields(factObjId)
+  }
+
+  const onChangeReturn = async (val) => {
+    const flag = form.getFieldValue('factReturnType') === 1
+    if (flag) {
+      // select
+      form.setFieldValue('simpleRuleValue', void 0)
+      setReturnValueList([])
+    } else {
+      // text
+      form.setFieldValue('factReturnAttr', void 0)
+      form.setFieldValue('factReturnVal', void 0)
+      form.setFieldValue('simpleRuleValue', void 0)
+    }
+    setVisibleItem(flag)
+  }
+
+  const onChangeReturnAttr = async (id) => {
+    try {
+      form.setFieldValue('factReturnVal', void 0)
+      const { data } = await fetchAttrDetails({ id })
+      setReturnDetail(data)
+      if (data.fromType === 2) {
+        // 配置属性源
+        const { data: arr } = await fetchQueryPropertyUrlData({
+          valueUrl: data.valueUrl,
+          requestBody: data.requestBody
+        })
+        setReturnValueList(arr)
+      } else if (data.fromType === 1) {
+        // 配置属性值
+        const list = data.valueList.map(v => ({
+          value: v.code,
+          label: v.value
+        }))
+        setReturnValueList(list)
+      }
+    } catch (error) {
+    }
   }
 
   const fetchFields = async (factObjId, spel) => {
@@ -223,6 +273,19 @@ const DemoQueryBuilder = () => {
       }
       stateObj['config'] = config
       setState(stateObj)
+
+      const { data: { list = [] } } = await fetchAttrList({
+        ruleFactObjId: factObjId,
+        pageNum: 1,
+        pageSize: 9999,
+        type: 2
+      })
+      const arr = list.map(v => ({
+        label: v.name,
+        value: v.id
+      }))
+      setReturnList(arr)
+  
     } catch (error) {
     }
   }
@@ -262,163 +325,270 @@ const DemoQueryBuilder = () => {
     );
   };
 
-  const renderForm = () => {
-    const onFinish = async (values) => {
-      const {tree: immutableTree, config} = state
-      const [spel] = _spelFormat(immutableTree, config)
-      if (!spel) {
-        message.error('请配置至少一条规则')
-        return
+  const onFinish = async (values) => {
+    const {tree: immutableTree, config} = state
+    const [spel] = _spelFormat(immutableTree, config)
+    if (!spel) {
+      message.error('请配置至少一条规则')
+      return
+    }
+    try {
+      const params = {
+        ...values,
+        sceneCode,
+        expression: spel
       }
-      try {
-        const params = {
-          ...values,
-          sceneCode,
-          expression: spel
-        }
-        if (ruleId) {
-          params['id'] = ruleId
-        }
-        const { msg } = await saveRules(params)
-        message.success(msg)
-      } catch (error) {
+      if (ruleId) {
+        params['id'] = ruleId
       }
-    };
-    const onFinishFailed = (errorInfo) => {
-      console.log('Failed:', errorInfo);
-    };
+      const { msg } = await saveRules(params)
+      message.success(msg)
+    } catch (error) {
+    }
+  };
+  const onFinishFailed = (errorInfo) => {
+    console.log('Failed:', errorInfo);
+  };
 
+  const renderBox = () => {
     return (
-      <Form
-        name="basic"
-        initialValues={{
-          priority: 0,
-          status: true,
-        }}
-        form={form}
-        labelAlign="left"
-        labelCol={{ style: { width: 100 } }}
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-        autoComplete="off"
-      >
-        <Form.Item
-          label="规则名称"
-          name="ruleName"
-          rules={[
-            {
-              required: true,
-              message: '请输入规则名称',
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          label="优先级"
-          name="priority"
-          rules={[
-            {
-              required: true,
-              message: '请输入优先级',
-            },
-          ]}
-        >
-          <InputNumber min={0} max={999} />
-        </Form.Item>
-
-        <Form.Item
-          label="返回结果"
-          name="simpleRuleValue"
-          rules={[
-            {
-              required: true,
-              message: '请输入返回结果',
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          label="事实对象"
-          name="factObjId"
-          rules={[
-            {
-              required: true,
-              message: '请选择事实对象',
-            },
-          ]}
-        >
-          <Select
-            style={{
-              width: 120,
-            }}
-            onChange={handleFactChange}
-            options={factList}
-          />
-        </Form.Item>
+      <div>
+        <div>
+          <Button onClick={resetValue}>重置</Button>
+          <Button className="btn-margin" onClick={clearValue}>清空</Button>
+          <Button className="btn-margin" onClick={validate}>校验</Button>
+          <Button className="btn-margin" onClick={switchShowLock}>显示锁定: {state.config.settings.showLock ? "显示" : "隐藏"}</Button>
+        </div>
         
-        {/* <Form.Item
-          label="是否启用"
-          name="status"
-          valuePropName="checked"
-          rules={[
-            {
-              required: true,
-              message: '请选择是否启用',
-            },
-          ]}
-        >
-          <Switch defaultChecked checkedChildren="启用" unCheckedChildren="禁用" />
-        </Form.Item> */}
+        <Query
+          {...state.config}
+          value={state.tree}
+          onChange={onChange}
+          renderBuilder={renderBuilder}
+        />
 
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            保存
-          </Button>
-          <Button className="btn-margin" onClick={jumpBack}>
-            返回
-          </Button>
-        </Form.Item>
-      </Form>
+        <div className="query-import-spel">
+          SpEL:
+          <input className="query-import-input" type="text" value={state.spelStr} onChange={onChangeSpelStr} />
+          <button onClick={importFromSpel}>导入规则</button>
+          <br />
+          { state.spelErrors.length > 0 
+              && <pre style={preErrorStyle}>
+                {stringify(state.spelErrors, undefined, 2)}
+              </pre> 
+          }
+        </div>
+
+        <div className="query-builder-result">
+          {renderResult(state)}
+        </div>
+      </div>
     )
+  }
+
+  const initFormItem = () => {
+    // 0文本 1单选 2多选
+    const type = returnDetail.valueType
+
+    const res = type === 0 ? (<Form.Item
+      label="返回结果"
+      name="simpleRuleValue"
+      rules={[
+        {
+          required: true,
+          message: '请输入返回结果',
+        },
+      ]}
+    >
+      <Input
+        style={{
+          width: 220,
+        }}
+      />
+    </Form.Item>)
+    :
+    (<Form.Item
+      label="返回结果"
+      name="factReturnVal"
+      rules={[
+        {
+          required: true,
+          message: '请选择返回结果',
+        },
+      ]}
+    >
+      <Select
+        mode={ type === 2 ? 'multiple' : void 0 }
+        showArrow
+        showSearch={false}
+        style={{
+          width: 220,
+        }}
+        options={returnValueList}
+      />
+    </Form.Item>)
+
+    return res
   }
 
   return (
     <div className="query-wrap">
       <div className="query-form">
-        {renderForm()}
-      </div>
-      <div>
-        <Button onClick={resetValue}>重置</Button>
-        <Button className="btn-margin" onClick={clearValue}>清空</Button>
-        <Button className="btn-margin" onClick={validate}>校验</Button>
-        <Button className="btn-margin" onClick={switchShowLock}>显示锁定: {state.config.settings.showLock ? "显示" : "隐藏"}</Button>
-      </div>
-      
-      <Query
-        {...state.config}
-        value={state.tree}
-        onChange={onChange}
-        renderBuilder={renderBuilder}
-      />
+        <Form
+          name="basic"
+          initialValues={{
+            priority: 0,
+            status: true,
+            factReturnType: 0,
+          }}
+          form={form}
+          labelAlign="left"
+          labelCol={{ style: { width: 120 } }}
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
+        >
+          <Form.Item
+            label="规则名称"
+            name="ruleName"
+            rules={[
+              {
+                required: true,
+                message: '请输入规则名称',
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
 
-      <div className="query-import-spel">
-        SpEL:
-        <input className="query-import-input" type="text" value={state.spelStr} onChange={onChangeSpelStr} />
-        <button onClick={importFromSpel}>导入规则</button>
-        <br />
-        { state.spelErrors.length > 0 
-            && <pre style={preErrorStyle}>
-              {stringify(state.spelErrors, undefined, 2)}
-            </pre> 
-        }
-      </div>
+          <Form.Item
+            label="优先级"
+            name="priority"
+            rules={[
+              {
+                required: true,
+                message: '请输入优先级',
+              },
+            ]}
+          >
+            <InputNumber min={0} max={999} />
+          </Form.Item>
 
-      <div className="query-builder-result">
-        {renderResult(state)}
+          <Form.Item
+            label="事实对象"
+            name="factObjId"
+            rules={[
+              {
+                required: true,
+                message: '请选择事实对象',
+              },
+            ]}
+          >
+            <Select
+              style={{
+                width: 220,
+              }}
+              onChange={handleFactChange}
+              options={factList}
+            />
+          </Form.Item>
+          
+          {/* <Form.Item
+            label="是否启用"
+            name="status"
+            valuePropName="checked"
+            rules={[
+              {
+                required: true,
+                message: '请选择是否启用',
+              },
+            ]}
+          >
+            <Switch defaultChecked checkedChildren="启用" unCheckedChildren="禁用" />
+          </Form.Item> */}
+
+          { renderBox() }
+
+          <Form.Item
+            label="返回结果类型"
+            name="factReturnType"
+            rules={[
+              {
+                required: true,
+                message: '请选择返回结果类型',
+              },
+            ]}
+          >
+            <Select
+              style={{
+                width: 220,
+              }}
+              onChange={onChangeReturn}
+              options={[
+                {
+                  value: 0,
+                  label: '文本',
+                },
+                {
+                  value: 1,
+                  label: '配置',
+                },
+              ]}
+            />
+          </Form.Item>
+
+          {visibleItem ?
+            <>
+              <Form.Item
+                label="返回结果属性"
+                name="factReturnAttr"
+                rules={[
+                  {
+                    required: true,
+                    message: '请选择返回结果属性',
+                  },
+                ]}
+              >
+                <Select
+                  style={{
+                    width: 220,
+                  }}
+                  onChange={onChangeReturnAttr}
+                  options={returnList}
+                />
+              </Form.Item>
+
+              { initFormItem() }
+            </>
+            :
+            <Form.Item
+              label="返回结果"
+              name="simpleRuleValue"
+              rules={[
+                {
+                  required: true,
+                  message: '请输入返回结果',
+                },
+              ]}
+            >
+              <Input
+                style={{
+                  width: 220,
+                }}
+              />
+            </Form.Item>
+          }
+          
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              保存
+            </Button>
+            <Button className="btn-margin" onClick={jumpBack}>
+              返回
+            </Button>
+          </Form.Item>
+        </Form>
       </div>
     </div>
   );

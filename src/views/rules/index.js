@@ -86,6 +86,51 @@ const DemoQueryBuilder = () => {
     // eslint-disable-next-line
   }, [factList.length])
 
+  const factFields = (data) => {
+    const obj = {}
+    data.fields.forEach(item => {
+      const filed = {
+        label: item.factFieldName,
+        type: item.fieldType,
+      }
+      if (item.fieldType === 'select') {
+        filed['valueSources'] = ['value']
+        if (item.fromType === 1) {
+          // 配置属性值
+          filed['fieldSettings'] = {
+            listValues: item.propertySelectList.map(s => ({
+              title: s.label,
+              value: s.value
+            }))
+          }
+        } else if (item.fromType === 2) {
+          // 远端拉取属性源
+          filed['fieldSettings'] = {
+            listValues: [],
+            asyncFetch: async () => {
+              try {
+                const { data } = await fetchQueryPropertyUrlData({
+                  valueUrl: item.propertySelectUrl
+                })
+                console.log('data: ', data);
+                return {
+                  values: data.map(s => ({
+                    title: s.label,
+                    value: s.value
+                  }))
+                }
+              } catch (error) {
+              }
+            }
+          }
+        }
+      }
+      obj[`data.${item.factFieldCode}`] = filed
+    })
+    console.log('obj: ', obj);
+    return obj
+  }
+
   // 获取所有可选事实对象
   const fetchAllRulesObj = async () => {
     try {
@@ -189,6 +234,8 @@ const DemoQueryBuilder = () => {
   // eslint-disable-next-line
   }, []);
   const onChange = useCallback((immutableTree, config, actionMeta) => {
+    console.log('config: ', config);
+    console.log('immutableTree: ', immutableTree);
     if (actionMeta)
       console.info(actionMeta);
     memo.immutableTree = immutableTree;
@@ -252,19 +299,12 @@ const DemoQueryBuilder = () => {
   const fetchFields = async (factObjId, spel) => {
     try {
       const { data } = await fetchRulesFactOne({ factObjId })
-      const obj = {}
-      data.fields.forEach(item => {
-        obj[`data.${item.factFieldCode}`] = {
-          label: item.factFieldName,
-          type: item.fieldType,
-        }
-      })
-      console.log('obj: ', obj);
+      
       const stateObj = {
         ...state, 
       }
       const {config} = state
-      config.fields = obj
+      config.fields = factFields(data)
       if (spel) {
         const [tree, spelErrors] = loadFromSpel(spel, config);
         stateObj['tree'] = tree ? checkTree(tree, config) : state.tree

@@ -72,7 +72,6 @@ const DemoQueryBuilder = () => {
 
   const [visibleItem, setVisibleItem] = useState(false)
 
-  const [returnDetail, setReturnDetail] = useState({})
   const [factList, setFactList] = useState([])
   const [returnList, setReturnList] = useState([])
   const [returnValueList, setReturnValueList] = useState([])
@@ -276,7 +275,6 @@ const DemoQueryBuilder = () => {
     try {
       form.setFieldValue('simpleRuleValue', void 0)
       const { data } = await fetchAttrDetails({ id })
-      setReturnDetail(data)
       if (data.fromType === 2) {
         // 配置属性源
         const { data: arr } = await fetchQueryPropertyUrlData({
@@ -317,6 +315,7 @@ const DemoQueryBuilder = () => {
 
       const { data: { list = [] } } = await fetchAttrList({
         ruleFactObjId: factObjId,
+        onlySelect: true,
         pageNum: 1,
         pageSize: 9999,
         type: 2
@@ -431,51 +430,6 @@ const DemoQueryBuilder = () => {
     )
   }
 
-  const initFormItem = () => {
-    // 0文本 1单选 2多选
-    const type = returnDetail.valueType
-
-    const res = type === 0 ? (<Form.Item
-      label="返回结果"
-      name="simpleRuleValue"
-      rules={[
-        {
-          required: true,
-          message: '请输入返回结果',
-        },
-      ]}
-    >
-      <Input
-        style={{
-          width: 220,
-        }}
-      />
-    </Form.Item>)
-    :
-    (<Form.Item
-      label="返回结果"
-      name="simpleRuleValue"
-      rules={[
-        {
-          required: true,
-          message: '请选择返回结果',
-        },
-      ]}
-    >
-      <Select
-        mode={ type === 2 ? 'multiple' : void 0 }
-        showArrow
-        showSearch={false}
-        style={{
-          width: 220,
-        }}
-        options={returnValueList}
-      />
-    </Form.Item>)
-
-    return res
-  }
-
   return (
     <div className="query-wrap">
       <div className="query-form">
@@ -576,7 +530,7 @@ const DemoQueryBuilder = () => {
                 },
                 {
                   value: 'select',
-                  label: '配置',
+                  label: 'Select',
                 },
               ]}
             />
@@ -603,7 +557,26 @@ const DemoQueryBuilder = () => {
                 />
               </Form.Item>
 
-              { initFormItem() }
+              <Form.Item
+                label="返回结果"
+                name="simpleRuleValue"
+                rules={[
+                  {
+                    required: true,
+                    message: '请选择返回结果',
+                  },
+                ]}
+              >
+                <Select
+                  mode="multiple"
+                  showArrow
+                  showSearch={false}
+                  style={{
+                    width: 220,
+                  }}
+                  options={returnValueList}
+                />
+              </Form.Item>
             </>
             :
             <Form.Item

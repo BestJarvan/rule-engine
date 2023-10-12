@@ -99,7 +99,7 @@ const DemoQueryBuilder = () => {
           filed['fieldSettings'] = {
             listValues: item.propertySelectList.map(s => ({
               title: s.label,
-              value: s.value
+              value: item.propertyValueType === 'String' ? String(s.value) : Number(s.value)
             }))
           }
         } else if (item.fromType === 2) {
@@ -112,11 +112,11 @@ const DemoQueryBuilder = () => {
                   valueUrl: item.propertySelectUrl,
                   requestBody: item.requestBody
                 })
-                console.log('data: ', data);
+                
                 return {
                   values: data.map(s => ({
                     title: s.label,
-                    value: s.value
+                    value: item.propertyValueType === 'String' ? String(s.value) : Number(s.value)
                   }))
                 }
               } catch (error) {

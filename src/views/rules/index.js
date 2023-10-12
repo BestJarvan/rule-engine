@@ -314,7 +314,6 @@ const DemoQueryBuilder = () => {
       setState(stateObj)
 
       const { data: { list = [] } } = await fetchAttrList({
-        ruleFactObjId: factObjId,
         onlySelect: true,
         pageNum: 1,
         pageSize: 9999,
@@ -589,11 +588,7 @@ const DemoQueryBuilder = () => {
                 },
               ]}
             >
-              <Input
-                style={{
-                  width: 220,
-                }}
-              />
+              <Input />
             </Form.Item>
           }
           

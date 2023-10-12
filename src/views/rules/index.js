@@ -162,7 +162,7 @@ const DemoQueryBuilder = () => {
         factObjId: data.factObjId,
         ruleName: data.ruleName,
         priority: data.priority,
-        simpleRuleValue: data.simpleRuleValue
+        simpleRuleValue: data.simpleRuleValueArray || data.simpleRuleValue
       })
 
     } catch (error) {
@@ -252,22 +252,21 @@ const DemoQueryBuilder = () => {
   const handleFactChange = (factObjId) => {
     clearValue()
     // setReturnList([])
-    form.setFieldValue('factReturnAttr', void 0)
-    form.setFieldValue('factReturnVal', void 0)
+    form.setFieldValue('simpleResultPropertyId', void 0)
+    form.setFieldValue('simpleRuleValue', void 0)
     setReturnValueList([])
     fetchFields(factObjId)
   }
 
   const onChangeReturn = async (val) => {
-    const flag = form.getFieldValue('factReturnType') === 1
+    const flag = form.getFieldValue('simpleRuleValueType') === 'select'
     if (flag) {
       // select
       form.setFieldValue('simpleRuleValue', void 0)
       setReturnValueList([])
     } else {
       // text
-      form.setFieldValue('factReturnAttr', void 0)
-      form.setFieldValue('factReturnVal', void 0)
+      form.setFieldValue('simpleResultPropertyId', void 0)
       form.setFieldValue('simpleRuleValue', void 0)
     }
     setVisibleItem(flag)
@@ -275,7 +274,7 @@ const DemoQueryBuilder = () => {
 
   const onChangeReturnAttr = async (id) => {
     try {
-      form.setFieldValue('factReturnVal', void 0)
+      form.setFieldValue('simpleRuleValue', void 0)
       const { data } = await fetchAttrDetails({ id })
       setReturnDetail(data)
       if (data.fromType === 2) {
@@ -375,14 +374,18 @@ const DemoQueryBuilder = () => {
       return
     }
     try {
-      const params = {
+      const params = JSON.parse(JSON.stringify({
         ...values,
         sceneCode,
         expression: spel
-      }
+      }))
       if (ruleId) {
         params['id'] = ruleId
       }
+      if (Array.isArray(params.simpleRuleValue)) {
+        params.simpleRuleValue = params.simpleRuleValue.join(',')
+      }
+      console.log('params: ', params);
       const { msg } = await saveRules(params)
       message.success(msg)
     } catch (error) {
@@ -451,7 +454,7 @@ const DemoQueryBuilder = () => {
     :
     (<Form.Item
       label="返回结果"
-      name="factReturnVal"
+      name="simpleRuleValue"
       rules={[
         {
           required: true,
@@ -481,7 +484,7 @@ const DemoQueryBuilder = () => {
           initialValues={{
             priority: 0,
             status: true,
-            factReturnType: 0,
+            simpleRuleValueType: 'text',
           }}
           form={form}
           labelAlign="left"
@@ -553,7 +556,7 @@ const DemoQueryBuilder = () => {
 
           <Form.Item
             label="返回结果类型"
-            name="factReturnType"
+            name="simpleRuleValueType"
             rules={[
               {
                 required: true,
@@ -568,11 +571,11 @@ const DemoQueryBuilder = () => {
               onChange={onChangeReturn}
               options={[
                 {
-                  value: 0,
+                  value: 'text',
                   label: '文本',
                 },
                 {
-                  value: 1,
+                  value: 'select',
                   label: '配置',
                 },
               ]}
@@ -583,7 +586,7 @@ const DemoQueryBuilder = () => {
             <>
               <Form.Item
                 label="返回结果属性"
-                name="factReturnAttr"
+                name="simpleResultPropertyId"
                 rules={[
                   {
                     required: true,

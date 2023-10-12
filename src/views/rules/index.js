@@ -92,7 +92,7 @@ const DemoQueryBuilder = () => {
         label: item.factFieldName,
         type: item.fieldType,
       }
-      if (item.fieldType === 'select') {
+      if (['multiselect', 'select'].includes(item.fieldType)) {
         filed['valueSources'] = ['value']
         if (item.fromType === 1) {
           // 配置属性值

@@ -110,7 +110,8 @@ const DemoQueryBuilder = () => {
             asyncFetch: async () => {
               try {
                 const { data } = await fetchQueryPropertyUrlData({
-                  valueUrl: item.propertySelectUrl
+                  valueUrl: item.propertySelectUrl,
+                  requestBody: item.requestBody
                 })
                 console.log('data: ', data);
                 return {

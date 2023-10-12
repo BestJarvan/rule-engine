@@ -112,7 +112,7 @@ const DemoQueryBuilder = () => {
                   valueUrl: item.propertySelectUrl,
                   requestBody: item.requestBody
                 })
-                
+
                 return {
                   values: data.map(s => ({
                     title: s.label,
@@ -469,7 +469,13 @@ const DemoQueryBuilder = () => {
               },
             ]}
           >
-            <InputNumber min={0} max={999} />
+            <InputNumber
+              style={{
+                width: 220,
+              }}
+              min={0}
+              max={999}
+            />
           </Form.Item>
 
           <Form.Item

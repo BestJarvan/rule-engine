@@ -94,7 +94,7 @@ const DemoQueryBuilder = () => {
       }
       if (['multiselect', 'select'].includes(item.fieldType)) {
         filed['valueSources'] = ['value']
-        if (item.fromType === 1) {
+        if (item.fromType === 1 || (item.propertySelectList && item.propertySelectList.length)) {
           // 配置属性值
           filed['fieldSettings'] = {
             listValues: item.propertySelectList.map(s => ({

@@ -306,7 +306,7 @@ const DemoQueryBuilder = () => {
 
   const fetchFields = async (factObjId, spel) => {
     try {
-      const { data } = await fetchRulesFactOne({ factObjId })
+      const { data } = await fetchRulesFactOne({ factObjId, ruleId })
       
       const stateObj = {
         ...state, 

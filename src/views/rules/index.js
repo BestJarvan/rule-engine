@@ -353,7 +353,7 @@ const DemoQueryBuilder = () => {
         {isValid ? null : <pre style={preErrorStyle}>{"Tree has errors"}</pre>}
         <br />
         <div>
-        spelFormat: 
+        表达式: 
           { spelErrors.length > 0 
             && <pre style={preErrorStyle}>
               {stringify(spelErrors, undefined, 2)}
@@ -421,7 +421,6 @@ const DemoQueryBuilder = () => {
         />
 
         <div className="query-import-spel">
-          SpEL:
           <input className="query-import-input" type="text" value={state.spelStr} onChange={onChangeSpelStr} />
           <button onClick={importFromSpel}>导入规则</button>
           <br />

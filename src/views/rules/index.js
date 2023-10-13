@@ -159,7 +159,7 @@ const DemoQueryBuilder = () => {
 
       setVisibleItem(data.simpleRuleValueType === 'select')
 
-      onChangeReturnAttr(data.simpleResultPropertyId)
+      data.simpleResultPropertyId && onChangeReturnAttr(data.simpleResultPropertyId)
 
       form.setFieldsValue({
         factObjId: data.factObjId,

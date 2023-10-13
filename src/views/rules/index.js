@@ -157,10 +157,16 @@ const DemoQueryBuilder = () => {
       const { data } = await fetchRuleDetail({ id: ruleId })
       fetchFields(data.factObjId, data.expression)
 
+      setVisibleItem(data.simpleRuleValueType === 'select')
+
+      onChangeReturnAttr(data.simpleResultPropertyId)
+
       form.setFieldsValue({
         factObjId: data.factObjId,
         ruleName: data.ruleName,
         priority: data.priority,
+        simpleResultPropertyId: data.simpleResultPropertyId,
+        simpleRuleValueType: data.simpleRuleValueType,
         simpleRuleValue: data.simpleRuleValueArray || data.simpleRuleValue
       })
 
@@ -281,11 +287,15 @@ const DemoQueryBuilder = () => {
           valueUrl: data.valueUrl,
           requestBody: data.requestBody
         })
-        setReturnValueList(arr)
+        const list = arr.map(v => ({
+          value: String(v.value),
+          label: v.label
+        }))
+        setReturnValueList(list)
       } else if (data.fromType === 1) {
         // 配置属性值
         const list = data.valueList.map(v => ({
-          value: v.code,
+          value: String(v.code),
           label: v.value
         }))
         setReturnValueList(list)

@@ -2,14 +2,19 @@ import axios from 'axios'
 import { message } from 'antd';
 
 import { requestUrl } from '../config/index'
+import { getToken } from '../utils/auth';
 
 const service = axios.create({})
 
 service.interceptors.request.use(
   (config) => {
+    const token = getToken()
+
     config.baseURL = requestUrl
 
     config.timeout = config.timeout ? config.timeout : 10000 // 自定义超时时间
+    token && (config.headers['PicpToken'] = token)
+
     return config
   },
   (error) => {

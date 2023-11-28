@@ -17,8 +17,7 @@ import {
   fetchAttrDetails,
   fetchQueryPropertyUrlData,
 } from '../../api/rule'
-// import loadedInitValue from "./init_value";
-// import loadedInitLogic from "./init_logic";
+import FormulaModal from './formula'
 import clone from "clone";
 import './index.css'
 
@@ -37,12 +36,9 @@ const preErrorStyle = { backgroundColor: "lightpink", margin: "10px", padding: "
 
 const emptyInitValue = {id: uuid(), type: "group"};
 const loadedConfig = loadConfig();
-// let initValue = loadedInitValue && Object.keys(loadedInitValue).length > 0 ? loadedInitValue : emptyInitValue;
-// const initLogic = loadedInitLogic && Object.keys(loadedInitLogic).length > 0 ? loadedInitLogic : undefined;
 let initValue = emptyInitValue;
 let initTree;
 initTree = checkTree(loadTree(initValue), loadedConfig);
-// initTree = checkTree(loadFromJsonLogic(initLogic, loadedConfig), loadedConfig); // <- this will work same  
 
 console.log('loadedConfig: ', loadedConfig);
 
@@ -70,7 +66,8 @@ const DemoQueryBuilder = () => {
     spelErrors: [],
   });
 
-  const [visibleItem, setVisibleItem] = useState(false)
+  // text、 select、 formula
+  const [valueType, setValueType] = useState('text')
 
   const [factList, setFactList] = useState([])
   const [returnList, setReturnList] = useState([])
@@ -157,7 +154,7 @@ const DemoQueryBuilder = () => {
       const { data } = await fetchRuleDetail({ id: ruleId })
       fetchFields(data.factObjId, data.expression)
 
-      setVisibleItem(data.simpleRuleValueType === 'select')
+      setValueType(data.simpleRuleValueType)
 
       data.simpleResultPropertyId && onChangeReturnAttr(data.simpleResultPropertyId)
 
@@ -264,8 +261,8 @@ const DemoQueryBuilder = () => {
   }
 
   const onChangeReturn = async (val) => {
-    const flag = form.getFieldValue('simpleRuleValueType') === 'select'
-    if (flag) {
+    const type = form.getFieldValue('simpleRuleValueType')
+    if (type === 'select') {
       // select
       form.setFieldValue('simpleRuleValue', void 0)
       setReturnValueList([])
@@ -274,7 +271,7 @@ const DemoQueryBuilder = () => {
       form.setFieldValue('simpleResultPropertyId', void 0)
       form.setFieldValue('simpleRuleValue', void 0)
     }
-    setVisibleItem(flag)
+    setValueType(type)
   }
 
   const onChangeReturnAttr = async (id) => {
@@ -342,6 +339,10 @@ const DemoQueryBuilder = () => {
   const jumpBack = () => {
     navigate(-1)
   }
+
+  // const openFormulaModal = () => {
+  //   console.log(123);
+  // }
 
 
   const renderResult = ({tree: immutableTree, config}) => {
@@ -438,6 +439,78 @@ const DemoQueryBuilder = () => {
     )
   }
 
+  const renderFormula = () => {
+    let dom
+    if (valueType === 'formula') {
+      dom = <FormulaModal />
+    }
+    return dom
+  }
+
+  const renderReturnField = () => {
+    let dom = (
+      <Form.Item
+        label="返回结果"
+        name="simpleRuleValue"
+        rules={[
+          {
+            required: true,
+            message: '请输入返回结果',
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+    )
+    if (valueType === 'select') {
+      dom = (
+        <>
+          <Form.Item
+            label="返回结果属性"
+            name="simpleResultPropertyId"
+            rules={[
+              {
+                required: true,
+                message: '请选择返回结果属性',
+              },
+            ]}
+          >
+            <Select
+              style={{
+                width: 220,
+              }}
+              onChange={onChangeReturnAttr}
+              options={returnList}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="返回结果"
+            name="simpleRuleValue"
+            rules={[
+              {
+                required: true,
+                message: '请选择返回结果',
+              },
+            ]}
+          >
+            <Select
+              mode="multiple"
+              showArrow
+              showSearch={false}
+              style={{
+                width: 220,
+              }}
+              options={returnValueList}
+            />
+          </Form.Item>
+        </>
+      )
+    }
+
+    return dom
+  }
+
   return (
     <div className="query-wrap">
       <div className="query-form">
@@ -506,20 +579,6 @@ const DemoQueryBuilder = () => {
             />
           </Form.Item>
           
-          {/* <Form.Item
-            label="是否启用"
-            name="status"
-            valuePropName="checked"
-            rules={[
-              {
-                required: true,
-                message: '请选择是否启用',
-              },
-            ]}
-          >
-            <Switch defaultChecked checkedChildren="启用" unCheckedChildren="禁用" />
-          </Form.Item> */}
-
           { renderBox() }
 
           <Form.Item
@@ -546,66 +605,17 @@ const DemoQueryBuilder = () => {
                   value: 'select',
                   label: 'Select',
                 },
+                {
+                  value: 'formula',
+                  label: '公式计算',
+                },
               ]}
             />
           </Form.Item>
 
-          {visibleItem ?
-            <>
-              <Form.Item
-                label="返回结果属性"
-                name="simpleResultPropertyId"
-                rules={[
-                  {
-                    required: true,
-                    message: '请选择返回结果属性',
-                  },
-                ]}
-              >
-                <Select
-                  style={{
-                    width: 220,
-                  }}
-                  onChange={onChangeReturnAttr}
-                  options={returnList}
-                />
-              </Form.Item>
+          { renderFormula() }
 
-              <Form.Item
-                label="返回结果"
-                name="simpleRuleValue"
-                rules={[
-                  {
-                    required: true,
-                    message: '请选择返回结果',
-                  },
-                ]}
-              >
-                <Select
-                  mode="multiple"
-                  showArrow
-                  showSearch={false}
-                  style={{
-                    width: 220,
-                  }}
-                  options={returnValueList}
-                />
-              </Form.Item>
-            </>
-            :
-            <Form.Item
-              label="返回结果"
-              name="simpleRuleValue"
-              rules={[
-                {
-                  required: true,
-                  message: '请输入返回结果',
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-          }
+          { renderReturnField() }
           
 
           <Form.Item>

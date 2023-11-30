@@ -68,7 +68,7 @@ const DemoQueryBuilder = () => {
 
   // text、 select、 formula
   const [valueType, setValueType] = useState('text')
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [factList, setFactList] = useState([])
   const [returnList, setReturnList] = useState([])
   const [returnValueList, setReturnValueList] = useState([])
@@ -404,6 +404,10 @@ const DemoQueryBuilder = () => {
     console.log('Failed:', errorInfo);
   };
 
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
   const renderBox = () => {
     return (
       <div>
@@ -442,7 +446,11 @@ const DemoQueryBuilder = () => {
   const renderFormula = () => {
     let dom
     if (valueType === 'formula') {
-      dom = <FormulaModal />
+      dom = (
+        <Button type="primary" className="formula" onClick={showModal}>
+          配置公式
+        </Button>
+      )
     }
     return dom
   }
@@ -628,6 +636,11 @@ const DemoQueryBuilder = () => {
           </Form.Item>
         </Form>
       </div>
+      
+      <FormulaModal
+        show={ isModalOpen }
+        setIsModalOpen={ setIsModalOpen }
+      />
     </div>
   );
 };

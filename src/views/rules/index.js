@@ -17,7 +17,7 @@ import {
   fetchAttrDetails,
   fetchQueryPropertyUrlData,
 } from '../../api/rule'
-import FormulaModal from './formula'
+import FormulaModal from '../../components/formula'
 import clone from "clone";
 import './index.css'
 
@@ -340,11 +340,6 @@ const DemoQueryBuilder = () => {
     navigate(-1)
   }
 
-  // const openFormulaModal = () => {
-  //   console.log(123);
-  // }
-
-
   const renderResult = ({tree: immutableTree, config}) => {
     const isValid = isValidTree(immutableTree);
     const [spel, spelErrors] = _spelFormat(immutableTree, config);
@@ -639,6 +634,8 @@ const DemoQueryBuilder = () => {
       
       <FormulaModal
         show={ isModalOpen }
+        factList={ factList }
+        ruleId={ ruleId }
         setIsModalOpen={ setIsModalOpen }
       />
     </div>

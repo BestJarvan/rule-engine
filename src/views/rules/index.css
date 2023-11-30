@@ -17,38 +17,3 @@
 .formula {
   margin-bottom: 12px;
 }
-.formula-wrap {
-  border: 1px solid #d7d9dc;
-  border-radius: 4px;
-  overflow: hidden;
-  height: 100%;
-}
-.formula-head {
-  height: 220px;
-  border-bottom: 1px solid #d7d9dc;
-  overflow: hidden;
-}
-.head-title {
-  background-color: #f5f6f8;
-  font-size: 14px;
-  padding: 0 10px;
-  line-height: 32px;
-}
-.react-codemirror2 {
-  height: 188px;
-}
-.react-codemirror2 .CodeMirror, .react-codemirror2 .CodeMirror-scroll {
-  height: 100%;
-  font-size: 12px;
-}
-.CodeMirror-hints {
-  z-index: 999999;
-}
-.cm-field-value {
-  color: #2f7deb;
-  background-color: #eaf2fd;
-  border-radius: 2px;
-  padding: 2px 5px;
-  margin: 1px;
-  line-height: inherit;
-}

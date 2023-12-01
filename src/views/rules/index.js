@@ -72,6 +72,7 @@ const DemoQueryBuilder = () => {
   const [factList, setFactList] = useState([])
   const [returnList, setReturnList] = useState([])
   const [returnValueList, setReturnValueList] = useState([])
+  const [formulaList, setFormulaList] = useState([])
 
   useEffect(() => {
     fetchAllRulesObj()
@@ -81,6 +82,22 @@ const DemoQueryBuilder = () => {
     };
     // eslint-disable-next-line
   }, [factList.length])
+
+  const factFormulaList = (obj) => {
+    const o = JSON.parse(JSON.stringify(obj))
+    const l = o.fields.filter(v => v.fieldType === 'number').map(s => ({
+      ...s,
+      label: s.factFieldName,
+      value: `f_${s.id}`,
+      isLeaf: true
+     }))
+   
+    return [{
+      label: obj.objName,
+      value: `s_${obj.id}`,
+      children: l
+    }]
+  }
 
   const factFields = (data) => {
     const obj = {}
@@ -304,6 +321,8 @@ const DemoQueryBuilder = () => {
   const fetchFields = async (factObjId, spel) => {
     try {
       const { data } = await fetchRulesFactOne({ factObjId, ruleId })
+
+      setFormulaList(factFormulaList(data))
       
       const stateObj = {
         ...state, 
@@ -634,7 +653,7 @@ const DemoQueryBuilder = () => {
       
       <FormulaModal
         show={ isModalOpen }
-        factList={ factList }
+        formulaList={ formulaList }
         ruleId={ ruleId }
         setIsModalOpen={ setIsModalOpen }
       />

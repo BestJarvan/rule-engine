@@ -3,15 +3,11 @@ import { Controlled as CodeMirror } from 'react-codemirror2'
 import { DownOutlined } from '@ant-design/icons';
 import { Modal, Tree } from 'antd';
 
-import {
-  fetchRulesFactOne,
-  fetchQueryPropertyUrlData,
-} from '../../api/rule'
-
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/hint/show-hint.js'
 import 'codemirror/addon/hint/show-hint.css'
+import 'codemirror/addon/edit/matchbrackets.js'
 import './index.css'
 
 const MAP = {
@@ -20,114 +16,86 @@ const MAP = {
   INVALID_FIELD_CLS: 'cm-field-invalid',
   DEPRECATE_FIELD_CLS: 'cm-deprecate'
 }
+let editorIns
 
 const FormulaModal = (props) => {
-  let editor
-  const { show, setIsModalOpen, factList } = props
-  const [value, setValue] = useState('')
+  const { show, setIsModalOpen, formulaList } = props
+  const [ value, setValue ] = useState('')
   const [ treeData, setTreeData ] = useState([])
+  const [ hintList, setHintList ] = useState([])
 
-  useEffect(() => {
-    const arr = (factList || []).map(v => ({
-      ...v,
-      value: `o_${v.value}`
-    }))
-    setTreeData(arr)
-  }, [factList])
-  
   const handleOk = () => {
-    setIsModalOpen(false);
+    console.log(getValue())
+    // setIsModalOpen(false);
   };
   const handleCancel = () => {
     setIsModalOpen(false);
   }
 
-  const onSelect = (selectedKeys, info) => {
-    console.log('selected', selectedKeys, info);
+  const onSelect = (selectedKeys, { node }) => {
+    console.log('selected', selectedKeys, node);
+    if (!selectedKeys.length) return
+    const k = selectedKeys[0].split('_')[0]
+    if (k === 'f') {
+      insertBookmark({
+        attr: node.factFieldCode,
+        text: node.factFieldName
+      })
+    }
   };
-  const getList = async (item) => {
-    const { data } = await fetchQueryPropertyUrlData({
-      valueUrl: item.propertySelectUrl,
-      requestBody: item.requestBody
-    })
 
-    return data.map(s => ({
-      label: s.label,
-      value: item.propertyValueType === 'String' ? String(s.value) : Number(s.value),
-      isLeaf: true
-    }))
-  }
-  const factFields = (data) => {
-    const o = JSON.parse(JSON.stringify(data))
-    const l = []
-    o.fields.forEach(item => {
-      if (['multiselect', 'select'].includes(item.fieldType)) {
-        let list = []
-        if (item.fromType === 1 || (item.propertySelectList && item.propertySelectList.length)) {
-          // 配置属性值
-          list = item.propertySelectList.map(s => ({
-            label: s.label,
-            value: `f${item.id}_${s.value}`,
-            isLeaf: true
-          }))
-        }
-        l.push({
-          label: item.factFieldName,
-          value: `f_${item.id}`,
-          children: list
-        })
-      }
-    })
-    return l
-  }
-  const updateTreeData = (list, key, children) =>
-    list.map((node) => {
-      if (node.value === key) {
-        return {
-          ...node,
-          children,
-        };
-      }
-      if (node.children) {
-        return {
-          ...node,
-          children: updateTreeData(node.children, key, children),
-        };
-      }
-      return node;
-    });
-
-  const onLoadData = ({ key, children }) =>
-    new Promise(async (resolve) => {
-      if (children || !key) {
-        resolve();
-        return;
-      }
-      const factObjId = String(key).split('_')[1]
-      const { data } = await fetchRulesFactOne({ factObjId, ruleId: props.ruleId })
-      const d = factFields(data)
-      console.log('d: ', d);
-
-      setTreeData((origin) =>
-        updateTreeData(origin, key, d)
-      );
-      resolve();
-    });
-
-  const insertField = (item) => {
-    if (!editor) return
-    const c = editor.getCursor()
-    editor.replaceSelection('' + item.text + '')
-    const d = editor.getCursor()
+  useEffect(() => {
+    setTreeData(formulaList)
+    if (formulaList.length) {
+      setHintList(formulaList[0].children || [])
+    }
+  }, [formulaList])
+  
+  const insertBookmark = (item) => {
+    if (!editorIns) return
+    const c = editorIns.getCursor()
+    
     const e = {
-      from: c,
-      to: d,
+      pos: c,
       field: item.attr,
       text: item.text
     }
     markField(e)
-    editor.focus()
+    editorIns.focus()
   }
+
+  const insertBracket = () => {
+    const c = editorIns.getCursor()
+    editorIns.replaceSelection('(')
+    const d = editorIns.getCursor()
+    const codeHtmL = document.createElement('span')
+    codeHtmL.classList.add('cm-bracket', 'CodeMirror-matchingbracket')
+    codeHtmL.innerText = '('
+
+    const codeHtmR = document.createElement('span')
+    codeHtmR.classList.add('cm-bracket', 'CodeMirror-matchingbracket')
+    codeHtmR.innerText = ')'
+
+    editorIns.markText(c, d, {
+      handleMouseEvents: true,
+      atomic: true,
+      replaceWith: codeHtmL
+    })
+
+    const c1 = editorIns.getCursor()
+    editorIns.replaceSelection(')')
+    const d1 = editorIns.getCursor()
+  
+    editorIns.markText(c1, d1, {
+      handleMouseEvents: true,
+      atomic: true,
+      replaceWith: codeHtmR
+    })
+
+    editorIns.setCursor(d)
+    editorIns.focus()
+  }
+  console.log('insertBracket: ', insertBracket);
 
   const markField = (t) => {
     let i = MAP.VALUE_FIELD_CLS
@@ -142,18 +110,14 @@ const FormulaModal = (props) => {
     codeHtm.classList.add('cm-field', i)
     codeHtm.innerText = t.text
 
-    const widgetNode = editor.markText(t.from, t.to, {
-      handleMouseEvents: true,
-      atomic: true,
-      replacedWith: codeHtm
-    }).widgetNode.childNodes[0]
-    Object.keys(n).forEach((key) => {
-      widgetNode.setAttribute(key, n[key])
+    const widgetNode = editorIns.setBookmark(t.pos, {
+      widget: codeHtm,
     })
 
-    setTimeout(() => {
-      console.log(getValue())
-    }, 1000)
+    const el = widgetNode.widgetNode.childNodes[0]
+    Object.keys(n).forEach((key) => {
+      el.setAttribute(key, n[key])
+    })
   }
 
   const getValue = () => {
@@ -168,14 +132,15 @@ const FormulaModal = (props) => {
       const _text = []
 
       for (const si of item.childNodes) {
-        if (si.className.indexOf('CodeMirror-widget') > -1) {
+        if (si.className && si.className.indexOf('CodeMirror-widget') > -1) {
           const sub = si.childNodes[0]
+          console.log('sub: ', sub);
+          console.log('si: ', si);
           const f = sub.dataset.attr
           const t = sub.innerText
           const cl = sub.className
           if (cl.indexOf(c.NAME_FILED_CLS) > -1 || cl.indexOf(c.VALUE_FIELD_CLS) > -1) {
-            // g.push('$' + f + '#' + h)
-            g.push(`{${f}}`)
+            g.push(`data.${f}`)
             _text.push(`{${t}}`)
             labelMap[f] = t
           } else {
@@ -207,22 +172,7 @@ const FormulaModal = (props) => {
       text: text.join('\n')
     }
   }
-
-  setTimeout(() => {
-    insertField({
-      attr: 'goodsId',
-      text: '商品id'
-    })
-  }, 2000);
   
-  const hintList = [
-    {
-      name: 'xiao'
-    },
-    {
-      name: 'xiao1212'
-    },
-  ]
   const showTipsList = []
 
   const getHintList = (cursorLine, cursorIndex) => {
@@ -237,8 +187,8 @@ const FormulaModal = (props) => {
     const str = cursorLine.substring(earlayRightIndex + 1, cursorIndex)
     // 遍历自定义提示数组，得到满足条件的提示内容
     hintList.forEach(item => {
-      if (item['name'].indexOf(str) !== -1 && str) {
-        showTipsList.push(item['name'])
+      if (item['label'].indexOf(str) !== -1 && str) {
+        showTipsList.push(item['label'])
       }
     })
   }
@@ -263,6 +213,15 @@ const FormulaModal = (props) => {
     }
   }
 
+  const onChange = (editor, data, value) => {
+    console.log('change-value: ', value);
+    console.log('change-data: ', data);
+    console.log('change-editor: ', editor);
+    if (data.origin === 'complete') {
+
+    }
+  }
+
   const options = {
     mode: 'javascript',
     theme: 'default',
@@ -274,9 +233,6 @@ const FormulaModal = (props) => {
       hint: handleShowHint,
       completeSingle: false,
     }
-    // extraKeys: {
-    //   Tab: 'autocomplete'
-    // },
   }
 
 
@@ -299,29 +255,27 @@ const FormulaModal = (props) => {
           <CodeMirror
             value={value}
             options={options}
-            editorDidMount={instance => { editor = instance }}
+            editorDidMount={instance => { 
+              console.log('instance: ', instance);
+              editorIns = instance
+              console.log('editorIns: ', editorIns);
+             }}
             onInputRead={(editor) => {
               editor.showHint()
             }}
             onBeforeChange={(e, data, value) => {
               setValue(value)
             }}
-            onChange={(editor, data, value) => {
-              console.log('change-value: ', value);
-              console.log('change-data: ', data);
-              console.log('change-editor: ', editor);
-
-              
-            }}
+            onChange={onChange}
           />
         </div>
         <div className='formula-bottom'>
           <Tree
             showLine
+            defaultExpandAll
             switcherIcon={<DownOutlined />}
             fieldNames={{ title: 'label', key: 'value', children: 'children' }}
             onSelect={onSelect}
-            loadData={onLoadData}
             treeData={treeData}
           />
         </div>

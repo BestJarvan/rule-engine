@@ -8,6 +8,7 @@ import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/hint/show-hint.js'
 import 'codemirror/addon/hint/show-hint.css'
 import 'codemirror/addon/edit/matchbrackets.js'
+import 'codemirror/addon/edit/closebrackets.js'
 import './index.css'
 
 const MAP = {
@@ -54,48 +55,20 @@ const FormulaModal = (props) => {
   const insertBookmark = (item) => {
     if (!editorIns) return
     const c = editorIns.getCursor()
-    
-    const e = {
-      pos: c,
-      field: item.attr,
-      text: item.text
-    }
-    markField(e)
-    editorIns.focus()
+    editorIns.replaceSelection('' + item.text + '')
+    setTimeout(() => {
+      const d = editorIns.getCursor()
+
+      const e = {
+        from: c,
+        to: d,
+        field: item.attr,
+        text: item.text
+      }
+      markField(e)
+      editorIns.focus()
+    }, 0);
   }
-
-  const insertBracket = () => {
-    const c = editorIns.getCursor()
-    editorIns.replaceSelection('(')
-    const d = editorIns.getCursor()
-    const codeHtmL = document.createElement('span')
-    codeHtmL.classList.add('cm-bracket', 'CodeMirror-matchingbracket')
-    codeHtmL.innerText = '('
-
-    const codeHtmR = document.createElement('span')
-    codeHtmR.classList.add('cm-bracket', 'CodeMirror-matchingbracket')
-    codeHtmR.innerText = ')'
-
-    editorIns.markText(c, d, {
-      handleMouseEvents: true,
-      atomic: true,
-      replaceWith: codeHtmL
-    })
-
-    const c1 = editorIns.getCursor()
-    editorIns.replaceSelection(')')
-    const d1 = editorIns.getCursor()
-  
-    editorIns.markText(c1, d1, {
-      handleMouseEvents: true,
-      atomic: true,
-      replaceWith: codeHtmR
-    })
-
-    editorIns.setCursor(d)
-    editorIns.focus()
-  }
-  console.log('insertBracket: ', insertBracket);
 
   const markField = (t) => {
     let i = MAP.VALUE_FIELD_CLS
@@ -110,8 +83,10 @@ const FormulaModal = (props) => {
     codeHtm.classList.add('cm-field', i)
     codeHtm.innerText = t.text
 
-    const widgetNode = editorIns.setBookmark(t.pos, {
-      widget: codeHtm,
+    const widgetNode = editorIns.markText(t.from, t.to, {
+      handleMouseEvents: true,
+      atomic: true,
+      replacedWith: codeHtm
     })
 
     const el = widgetNode.widgetNode.childNodes[0]
@@ -228,6 +203,7 @@ const FormulaModal = (props) => {
     lineWrapping: true,
     lineNumbers: false,
     matchBrackets: true,
+    autoCloseBrackets: true,
     autofocus: true,
     hintOptions: {
       hint: handleShowHint,

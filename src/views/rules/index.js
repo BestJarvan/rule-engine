@@ -199,6 +199,14 @@ const DemoQueryBuilder = () => {
     initValue = _initValue;
   };
 
+  const setSimpleRuleValue = (e) => {
+    if (!e) return
+    form.setFieldsValue({
+      simpleRuleValue: e
+    })
+
+  }
+
   const switchShowLock = () => {
     const newConfig = clone(state.config);
     newConfig.settings.showLock = !newConfig.settings.showLock;
@@ -655,6 +663,7 @@ const DemoQueryBuilder = () => {
         show={ isModalOpen }
         formulaList={ formulaList }
         ruleId={ ruleId }
+        setSimpleRuleValue={ setSimpleRuleValue }
         setIsModalOpen={ setIsModalOpen }
       />
     </div>

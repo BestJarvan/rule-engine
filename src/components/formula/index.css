@@ -44,3 +44,18 @@
   margin: 1px;
   line-height: inherit;
 }
+.cm-s-default .cm-bracket-0 {
+  color: #cc2121;
+}
+.cm-s-default .cm-bracket-1 {
+  color: #cdb815;
+}
+.cm-s-default .cm-bracket-2 {
+  color:  #9f24f0;
+}
+.cm-s-default .cm-bracket-3 {
+  color:  #1fd719;
+}
+.cm-s-default .cm-bracket-4 {
+  color:  #c68f18;
+}

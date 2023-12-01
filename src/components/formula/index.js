@@ -8,33 +8,34 @@ import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/hint/show-hint.js'
 import 'codemirror/addon/hint/show-hint.css'
 import 'codemirror/addon/edit/matchbrackets.js'
-import 'codemirror/addon/edit/closebrackets.js'
 import './index.css'
 
 const MAP = {
   NAME_FILED_CLS: 'cm-field-other',
   VALUE_FIELD_CLS: 'cm-field-value',
+  BRACKET_FIELD_CLS: 'cm-bracket',
   INVALID_FIELD_CLS: 'cm-field-invalid',
   DEPRECATE_FIELD_CLS: 'cm-deprecate'
 }
 let editorIns
 
 const FormulaModal = (props) => {
-  const { show, setIsModalOpen, formulaList } = props
+  const { show, formulaList, setIsModalOpen, setSimpleRuleValue } = props
   const [ value, setValue ] = useState('')
   const [ treeData, setTreeData ] = useState([])
   const [ hintList, setHintList ] = useState([])
 
   const handleOk = () => {
-    console.log(getValue())
-    // setIsModalOpen(false);
+    const value = getValue()
+    console.log('value: ', value);
+    setSimpleRuleValue(value.formula)
+    setIsModalOpen(false);
   };
   const handleCancel = () => {
     setIsModalOpen(false);
   }
 
   const onSelect = (selectedKeys, { node }) => {
-    console.log('selected', selectedKeys, node);
     if (!selectedKeys.length) return
     const k = selectedKeys[0].split('_')[0]
     if (k === 'f') {
@@ -109,8 +110,6 @@ const FormulaModal = (props) => {
       for (const si of item.childNodes) {
         if (si.className && si.className.indexOf('CodeMirror-widget') > -1) {
           const sub = si.childNodes[0]
-          console.log('sub: ', sub);
-          console.log('si: ', si);
           const f = sub.dataset.attr
           const t = sub.innerText
           const cl = sub.className
@@ -124,7 +123,7 @@ const FormulaModal = (props) => {
             _text.push(t)
           }
         } else {
-          const t = si.innerText
+          const t = si.innerText || si.textContent
           g.push(t)
           _text.push(t)
         }
@@ -189,12 +188,9 @@ const FormulaModal = (props) => {
   }
 
   const onChange = (editor, data, value) => {
-    console.log('change-value: ', value);
-    console.log('change-data: ', data);
-    console.log('change-editor: ', editor);
-    if (data.origin === 'complete') {
-
-    }
+    // console.log('change-value: ', value);
+    // console.log('change-data: ', data);
+    // console.log('change-editor: ', editor);
   }
 
   const options = {
@@ -203,7 +199,6 @@ const FormulaModal = (props) => {
     lineWrapping: true,
     lineNumbers: false,
     matchBrackets: true,
-    autoCloseBrackets: true,
     autofocus: true,
     hintOptions: {
       hint: handleShowHint,
@@ -231,11 +226,9 @@ const FormulaModal = (props) => {
           <CodeMirror
             value={value}
             options={options}
-            editorDidMount={instance => { 
-              console.log('instance: ', instance);
+            editorDidMount={instance => {
               editorIns = instance
-              console.log('editorIns: ', editorIns);
-             }}
+            }}
             onInputRead={(editor) => {
               editor.showHint()
             }}

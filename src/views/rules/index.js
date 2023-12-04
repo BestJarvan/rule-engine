@@ -73,6 +73,7 @@ const DemoQueryBuilder = () => {
   const [returnList, setReturnList] = useState([])
   const [returnValueList, setReturnValueList] = useState([])
   const [formulaList, setFormulaList] = useState([])
+  const [formulaText, setFormulaText] = useState([])
 
   useEffect(() => {
     fetchAllRulesObj()
@@ -175,6 +176,10 @@ const DemoQueryBuilder = () => {
 
       data.simpleResultPropertyId && onChangeReturnAttr(data.simpleResultPropertyId)
 
+      if (data.formulaText) {
+        setFormulaText(data.formulaText)
+      }
+
       form.setFieldsValue({
         factObjId: data.factObjId,
         ruleName: data.ruleName,
@@ -204,7 +209,6 @@ const DemoQueryBuilder = () => {
     form.setFieldsValue({
       simpleRuleValue: e
     })
-
   }
 
   const switchShowLock = () => {
@@ -397,6 +401,15 @@ const DemoQueryBuilder = () => {
     );
   };
 
+  const setReturnValue = ({ formula, formulaText }) => {
+    if (formula) {
+      setSimpleRuleValue(formula)
+    }
+    if (formulaText) {
+      setFormulaText(formulaText)
+    }
+  }
+
   const onFinish = async (values) => {
     const {tree: immutableTree, config} = state
     const [spel] = _spelFormat(immutableTree, config)
@@ -412,6 +425,9 @@ const DemoQueryBuilder = () => {
       }))
       if (ruleId) {
         params['id'] = ruleId
+      }
+      if (formulaText) {
+        params['formulaText'] = formulaText
       }
       if (Array.isArray(params.simpleRuleValue)) {
         params.simpleRuleValue = params.simpleRuleValue.join(',')
@@ -663,7 +679,8 @@ const DemoQueryBuilder = () => {
         show={ isModalOpen }
         formulaList={ formulaList }
         ruleId={ ruleId }
-        setSimpleRuleValue={ setSimpleRuleValue }
+        formulaText={ formulaText }
+        setReturnValue={ setReturnValue }
         setIsModalOpen={ setIsModalOpen }
       />
     </div>

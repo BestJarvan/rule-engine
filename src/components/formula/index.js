@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Controlled as CodeMirror } from 'react-codemirror2'
 import { DownOutlined } from '@ant-design/icons';
 import { Modal, Tree } from 'antd';
+import { Pos } from 'codemirror'
 
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/lib/codemirror.css';
@@ -20,15 +21,118 @@ const MAP = {
 let editorIns
 
 const FormulaModal = (props) => {
-  const { show, formulaList, setIsModalOpen, setSimpleRuleValue } = props
+  const { show, formulaList, setIsModalOpen, formulaText, setReturnValue } = props
   const [ value, setValue ] = useState('')
   const [ treeData, setTreeData ] = useState([])
   const [ hintList, setHintList ] = useState([])
 
+  const setEditValue = (a) => {
+    if (!editorIns || !a) return
+    const d = []
+    const e = []
+    if (a) {
+      const f = a.split('\n')
+      f.forEach((b, i)  => {
+        let f = ''
+        const g = b.split(/({[0-9a-zA-Z\\._#@}]+)/g)
+        g.forEach((d) => {
+          if (/^{data./.test(d)) {
+            let g
+            const fieldKey = d.replace(/({|})/g, '')
+            const k = fieldKey.split('.')[1]
+            const c = hintList.find(t => t.factFieldCode === k)
+            g = c ? c.factFieldName : k
+            const l = Pos(i, f.length)
+            f += '' + (g ? g : k) + ''
+            const m = Pos(i, f.length)
+            e.push({
+              from: l,
+              to: m,
+              field: k,
+              text: g,
+            })
+          } else {
+            f += d
+          }
+        })
+        d.push(f)
+      })
+    }
+    const v = d.length > 1 ? d.join('\n') : d.join('')
+    editorIns.setValue(v)
+    setTimeout(() => {
+      e.forEach((c) => {
+        markField(c)
+      })
+    }, 0)
+  }
+
+  const getValue = () => {
+    const a = []
+    const b = []
+    const text = []
+    const c = MAP
+    const labelMap = {}
+    const e = document.querySelectorAll('.CodeMirror-line>span')
+
+    for (const item of e) {
+      const g = []
+      const s = []
+      const _text = []
+
+      for (const si of item.childNodes) {
+        if (si.className && si.className.indexOf('CodeMirror-widget') > -1) {
+          const sub = si.childNodes[0]
+          const f = sub.dataset.attr
+          const t = sub.innerText
+          const cl = sub.className
+          if (cl.indexOf(c.NAME_FILED_CLS) > -1 || cl.indexOf(c.VALUE_FIELD_CLS) > -1) {
+            g.push(`data.${f}`)
+            s.push(`{data.${f}}`)
+            _text.push(`{${t}}`)
+            labelMap[f] = t
+          } else {
+            if (cl.indexOf(c.DEPRECATE_FIELD_CLS) > -1 || cl.indexOf(c.INVALID_FIELD_CLS) > -1) return
+            g.push(t)
+            s.push(t)
+            _text.push(t)
+          }
+        } else {
+          const t = si.innerText || si.textContent
+          g.push(t)
+          s.push(t)
+          _text.push(t)
+        }
+      }
+    
+      const h = g
+        .join('')
+        .replace(/\u200b/g, '')
+        .replace(/\u00a0/g, ' ')
+      const hs = s
+        .join('')
+        .replace(/\u200b/g, '')
+        .replace(/\u00a0/g, ' ')
+      const ht = _text
+        .join('')
+        .replace(/\u200b/g, '')
+        .replace(/\u00a0/g, ' ')
+      a.push(hs)
+      b.push(h)
+      text.push(ht)
+    }
+    return {
+      formula: b.join('\n'),
+      formulaText: a.join('\n'),
+      labelMap: labelMap,
+      text: text.join('\n')
+    }
+  }
+
   const handleOk = () => {
     const value = getValue()
     console.log('value: ', value);
-    setSimpleRuleValue(value.formula)
+    setReturnValue(value)
     setIsModalOpen(false);
   };
   const handleCancel = () => {
@@ -45,6 +149,13 @@ const FormulaModal = (props) => {
       })
     }
   };
+
+  useEffect(() => {
+    if (formulaText) {
+      setEditValue(formulaText)
+    }
+  // eslint-disable-next-line
+  }, [formulaText])
 
   useEffect(() => {
     setTreeData(formulaList)
@@ -76,10 +187,7 @@ const FormulaModal = (props) => {
     const n = {
       'data-attr': t.field
     }
-    
-    if (t.invalid) {
-      i = MAP.INVALID_FIELD_CLS
-    }
+
     const codeHtm = document.createElement('span')
     codeHtm.classList.add('cm-field', i)
     codeHtm.innerText = t.text
@@ -96,57 +204,6 @@ const FormulaModal = (props) => {
     })
   }
 
-  const getValue = () => {
-    const b = []
-    const text = []
-    const c = MAP
-    const labelMap = {}
-    const e = document.querySelectorAll('.CodeMirror-line>span')
-
-    for (const item of e) {
-      const g = []
-      const _text = []
-
-      for (const si of item.childNodes) {
-        if (si.className && si.className.indexOf('CodeMirror-widget') > -1) {
-          const sub = si.childNodes[0]
-          const f = sub.dataset.attr
-          const t = sub.innerText
-          const cl = sub.className
-          if (cl.indexOf(c.NAME_FILED_CLS) > -1 || cl.indexOf(c.VALUE_FIELD_CLS) > -1) {
-            g.push(`data.${f}`)
-            _text.push(`{${t}}`)
-            labelMap[f] = t
-          } else {
-            if (cl.indexOf(c.DEPRECATE_FIELD_CLS) > -1 || cl.indexOf(c.INVALID_FIELD_CLS) > -1) return
-            g.push(t)
-            _text.push(t)
-          }
-        } else {
-          const t = si.innerText || si.textContent
-          g.push(t)
-          _text.push(t)
-        }
-      }
-    
-      const h = g
-        .join('')
-        .replace(/\u200b/g, '')
-        .replace(/\u00a0/g, ' ')
-      const ht = _text
-        .join('')
-        .replace(/\u200b/g, '')
-        .replace(/\u00a0/g, ' ')
-      b.push(h)
-      text.push(ht)
-    }
-    return {
-      formula: b.join('\n'),
-      labelMap: labelMap,
-      text: text.join('\n')
-    }
-  }
-  
   const showTipsList = []
 
   const getHintList = (cursorLine, cursorIndex) => {
@@ -167,6 +224,7 @@ const FormulaModal = (props) => {
     })
   }
 
+  // eslint-disable-next-line
   const handleShowHint = (editor) => {
     showTipsList.length = 0
     const cursor = editor.getCursor()
@@ -201,11 +259,10 @@ const FormulaModal = (props) => {
     matchBrackets: true,
     autofocus: true,
     hintOptions: {
-      hint: handleShowHint,
-      completeSingle: false,
+      // hint: handleShowHint,
+      // completeSingle: false,
     }
   }
-
 
   return (
     <Modal

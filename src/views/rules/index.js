@@ -73,7 +73,7 @@ const DemoQueryBuilder = () => {
   const [returnList, setReturnList] = useState([])
   const [returnValueList, setReturnValueList] = useState([])
   const [formulaList, setFormulaList] = useState([])
-  const [formulaText, setFormulaText] = useState([])
+  const [formulaText, setFormulaText] = useState('')
 
   useEffect(() => {
     fetchAllRulesObj()
@@ -402,6 +402,8 @@ const DemoQueryBuilder = () => {
   };
 
   const setReturnValue = ({ formula, formulaText }) => {
+    console.log('formulaText: ', formulaText);
+    console.log('formula: ', formula);
     if (formula) {
       setSimpleRuleValue(formula)
     }

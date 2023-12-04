@@ -151,11 +151,11 @@ const FormulaModal = (props) => {
   };
 
   useEffect(() => {
-    if (formulaText) {
+    if (formulaText && show) {
       setEditValue(formulaText)
     }
   // eslint-disable-next-line
-  }, [formulaText])
+  }, [formulaText, show])
 
   useEffect(() => {
     setTreeData(formulaList)

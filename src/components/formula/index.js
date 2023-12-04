@@ -73,7 +73,7 @@ const FormulaModal = (props) => {
     const text = []
     const c = MAP
     const labelMap = {}
-    const e = document.querySelectorAll('.CodeMirror-line>span')
+    const e = document.querySelectorAll('.CodeMirror-code>.CodeMirror-line>span')
 
     for (const item of e) {
       const g = []
@@ -153,7 +153,6 @@ const FormulaModal = (props) => {
   useEffect(() => {
     if (show) {
       editorIns.setValue('')
-      console.log('editorIns: ', editorIns);
       if (formulaText) {
         setTimeout(() => {
           setEditValue(formulaText)

@@ -151,8 +151,14 @@ const FormulaModal = (props) => {
   };
 
   useEffect(() => {
-    if (formulaText && show) {
-      setEditValue(formulaText)
+    if (show) {
+      editorIns.setValue('')
+      console.log('editorIns: ', editorIns);
+      if (formulaText) {
+        setTimeout(() => {
+          setEditValue(formulaText)
+        }, 0);
+      }
     }
   // eslint-disable-next-line
   }, [formulaText, show])

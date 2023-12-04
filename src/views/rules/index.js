@@ -507,7 +507,9 @@ const DemoQueryBuilder = () => {
           },
         ]}
       >
-        <Input />
+        <Input
+          disabled={ valueType === 'formula' }
+        />
       </Form.Item>
     )
     if (valueType === 'select') {

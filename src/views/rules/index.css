@@ -7,3 +7,13 @@
 .btn-margin {
   margin-left: 12px;
 }
+.ant-modal-content {
+  width: 800px;
+  height: 680px;
+}
+.ant-modal-body {
+  height: 567px;
+}
+.formula {
+  margin-bottom: 12px;
+}

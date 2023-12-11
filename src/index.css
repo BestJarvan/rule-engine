@@ -11,3 +11,10 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.ant-modal-wrap {
+  z-index: 99999999;
+}
+.ant-modal-mask {
+  z-index: 99999998;
+}

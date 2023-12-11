@@ -55,7 +55,8 @@ const DemoQueryBuilder = () => {
   const [form] = Form.useForm();
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const isEdit = searchParams.get('type') === 'edit'
+  const isEdit = searchParams.get('type') !== 'add'
+  const isCopy = searchParams.get('type') === 'copy'
   const sceneCode = searchParams.get('scene')
   const ruleId = searchParams.get('id')
 
@@ -180,14 +181,19 @@ const DemoQueryBuilder = () => {
         setFormulaText(data.formulaText)
       }
 
-      form.setFieldsValue({
+      const obj = {
         factObjId: data.factObjId,
-        ruleName: data.ruleName,
         priority: data.priority,
         simpleResultPropertyId: data.simpleResultPropertyId,
         simpleRuleValueType: data.simpleRuleValueType,
         simpleRuleValue: data.simpleRuleValueArray || data.simpleRuleValue
-      })
+      }
+
+      if (!isCopy) {
+        obj['ruleName'] = data.ruleName
+      }
+
+      form.setFieldsValue(obj)
 
     } catch (error) {
     }
@@ -425,7 +431,7 @@ const DemoQueryBuilder = () => {
         sceneCode,
         expression: spel
       }))
-      if (ruleId) {
+      if (!isCopy && ruleId) {
         params['id'] = ruleId
       }
       if (formulaText) {

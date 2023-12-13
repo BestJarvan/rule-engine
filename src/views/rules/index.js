@@ -472,6 +472,9 @@ const DemoQueryBuilder = () => {
     setIsModalOpen(true);
   };
 
+  const filterOption = (input, option) =>
+    (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+
   const renderBox = () => {
     return (
       <div>
@@ -571,7 +574,8 @@ const DemoQueryBuilder = () => {
             <Select
               mode="multiple"
               showArrow
-              showSearch={false}
+              showSearch
+              filterOption={filterOption}
               style={{
                 width: 500,
               }}

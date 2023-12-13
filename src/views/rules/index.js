@@ -491,7 +491,7 @@ const DemoQueryBuilder = () => {
 
         <div className="query-import-spel">
           <input className="query-import-input" type="text" value={state.spelStr} onChange={onChangeSpelStr} />
-          <button onClick={importFromSpel}>导入规则</button>
+          <Button onClick={importFromSpel}>导入规则</Button>
           <br />
           { state.spelErrors.length > 0 
               && <pre style={preErrorStyle}>

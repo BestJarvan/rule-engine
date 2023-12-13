@@ -573,7 +573,7 @@ const DemoQueryBuilder = () => {
               showArrow
               showSearch={false}
               style={{
-                width: 220,
+                width: 500,
               }}
               options={returnValueList}
             />

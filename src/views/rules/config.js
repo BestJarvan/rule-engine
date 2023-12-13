@@ -115,6 +115,9 @@ const ruleConfig = () => {
         showSearch: true
       }
     },
+    treemultiselect: {
+      ...InitialConfig.widgets.treemultiselect,
+    }
   };
 
   const types = {

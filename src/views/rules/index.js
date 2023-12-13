@@ -140,6 +140,24 @@ const DemoQueryBuilder = () => {
             }
           }
         }
+      } else if (['treemultiselect'].includes(item.fieldType)) {
+        function formatList (list) {
+          return list.map(s => {
+            const o = {
+              title: s.label,
+              value: s.value,
+            }
+            if (s.children.length) {
+              o['children'] = formatList(s.children)
+            }
+            return o
+          })
+        }
+        const arr = formatList(item.propertySelectList)
+        filed['fieldSettings'] = {
+          treeExpandAll: true,
+          listValues: arr
+        }
       }
       obj[`data.${item.factFieldCode}`] = filed
     })

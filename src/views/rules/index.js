@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  Button, InputNumber, Form, Input, Select, message,
+  Button, InputNumber, Form, Input, Select, message, Switch
 } from 'antd';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
@@ -617,6 +617,20 @@ const DemoQueryBuilder = () => {
             ]}
           >
             <Input />
+          </Form.Item>
+
+          <Form.Item
+            label="是否启用"
+            name="enable"
+            valuePropName="checked"
+            rules={[
+              {
+                required: true,
+                message: '请选择是否启用',
+              },
+            ]}
+          >
+            <Switch defaultChecked checkedChildren="启用" unCheckedChildren="禁用" />
           </Form.Item>
 
           <Form.Item

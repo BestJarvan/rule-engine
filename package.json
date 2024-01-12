@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "serve": "cross-env REACT_APP_ENV=serve react-scripts start",
+    "serve:pre": "cross-env REACT_APP_ENV=pre react-scripts start",
+    "serve:prod": "cross-env REACT_APP_ENV=master react-scripts start",
     "start": "cross-env REACT_APP_ENV=serve react-scripts start",
     "deploy:jen": "helper-cli dp rule-engine-test",
     "build:test": "cross-env REACT_APP_ENV=serve react-scripts build",
     "build:pre": "cross-env REACT_APP_ENV=pre react-scripts build",
-    "build:master": "cross-env REACT_APP_ENV=master react-scripts build",
+    "build:prod": "cross-env REACT_APP_ENV=master react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

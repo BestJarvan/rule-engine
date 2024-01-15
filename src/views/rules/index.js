@@ -202,6 +202,7 @@ const DemoQueryBuilder = () => {
       const obj = {
         factObjId: data.factObjId,
         priority: data.priority,
+        enable: !!data.enable,
         simpleResultPropertyId: data.simpleResultPropertyId,
         simpleRuleValueType: data.simpleRuleValueType,
         simpleRuleValue: data.simpleRuleValueArray || data.simpleRuleValue
@@ -596,6 +597,7 @@ const DemoQueryBuilder = () => {
           name="basic"
           initialValues={{
             priority: 0,
+            enable: true,
             status: true,
             simpleRuleValueType: 'text',
           }}
@@ -630,7 +632,7 @@ const DemoQueryBuilder = () => {
               },
             ]}
           >
-            <Switch defaultChecked checkedChildren="启用" unCheckedChildren="禁用" />
+            <Switch checkedChildren="启用" unCheckedChildren="禁用" />
           </Form.Item>
 
           <Form.Item

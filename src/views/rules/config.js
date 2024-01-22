@@ -123,6 +123,24 @@ const ruleConfig = () => {
   const types = {
     ...InitialConfig.types,
     // examples of  overriding
+    multiselect: {
+      ...InitialConfig.types.multiselect,
+      widgets: {
+        multiselect: {
+          operators: [
+            // "multiselect_contains",
+            // "multiselect_not_contains",
+            // "multiselect_equals",
+            // "multiselect_not_equals",
+            "multiselect_include",
+            // "is_empty",
+            // "is_not_empty",
+            "is_null",
+            "is_not_null"
+          ]
+        }
+      }
+    },
     text: {
       ...InitialConfig.types.text,
       excludeOperators: ["proximity"],

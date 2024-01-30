@@ -30,7 +30,7 @@ export function fetchQueryPropertyUrlData(data) {
 // 查询所有事实对象
 export function fetchRulesFact(data) {
   return request({
-    url: '/pay-center/rule/fact/all',
+    url: '/rule-link/rule/fact/all',
     method: 'post',
     data
   })
@@ -39,7 +39,7 @@ export function fetchRulesFact(data) {
 // 查询单个对象及字段
 export function fetchRulesFactOne(data) {
   return request({
-    url: '/pay-center/rule/fact/one',
+    url: '/rule-link/rule/fact/one',
     method: 'post',
     data
   })
@@ -48,7 +48,7 @@ export function fetchRulesFactOne(data) {
 // 查询规则详情
 export function fetchRuleDetail(data) {
   return request({
-    url: '/pay-center/rule/queryOne',
+    url: '/rule-link/rule/queryOne',
     method: 'post',
     data
   })
@@ -57,7 +57,7 @@ export function fetchRuleDetail(data) {
 // 保存规则
 export function saveRules(data) {
   return request({
-    url: '/pay-center/rule/save',
+    url: '/rule-link/rule/save',
     method: 'post',
     data
   })

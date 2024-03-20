@@ -34,6 +34,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@bestjarvan/helper-cli": "^0.0.4",
     "cross-env": "^7.0.3",
     "less": "4.1.1"
   },

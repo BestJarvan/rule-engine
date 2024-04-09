@@ -4,7 +4,7 @@ import {
 } from 'antd';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
-  Query, Builder, Utils, 
+  Query, Builder, Utils,
 } from "@bestjarvan/helper-rule-engine";
 import throttle from "lodash/throttle";
 import loadConfig from "./config";
@@ -21,6 +21,7 @@ import FormulaModal from '../../components/formula'
 import clone from "clone";
 import './index.css'
 
+const { TextArea } = Input
 const stringify = JSON.stringify;
 const {
   _spelFormat,
@@ -31,10 +32,10 @@ const {
   loadFromSpel,
   isValidTree
 } = Utils;
-const preStyle = { backgroundColor: "darkgrey", margin: "10px", padding: "10px" };
+const preStyle = { backgroundColor: "#eeeeee", margin: "10px", padding: "10px", borderRadius: "4px" };
 const preErrorStyle = { backgroundColor: "lightpink", margin: "10px", padding: "10px" };
 
-const emptyInitValue = {id: uuid(), type: "group"};
+const emptyInitValue = { id: uuid(), type: "group" };
 const loadedConfig = loadConfig();
 let initValue = emptyInitValue;
 let initTree;
@@ -43,11 +44,13 @@ initTree = checkTree(loadTree(initValue), loadedConfig);
 console.log('loadedConfig: ', loadedConfig);
 
 // Trick to hot-load new config when you edit `config.tsx`
-const updateEvent = new CustomEvent("update", { detail: {
-  config: loadedConfig,
-  _initTree: initTree,
-  _initValue: initValue,
-} });
+const updateEvent = new CustomEvent("update", {
+  detail: {
+    config: loadedConfig,
+    _initTree: initTree,
+    _initValue: initValue,
+  }
+});
 window.dispatchEvent(updateEvent);
 
 const DemoQueryBuilder = () => {
@@ -61,7 +64,7 @@ const DemoQueryBuilder = () => {
   const ruleId = searchParams.get('id')
 
   const [state, setState] = useState({
-    tree: initTree, 
+    tree: initTree,
     config: loadedConfig,
     spelStr: "",
     spelErrors: [],
@@ -92,8 +95,8 @@ const DemoQueryBuilder = () => {
       label: s.factFieldName,
       value: `f_${s.id}`,
       isLeaf: true
-     }))
-   
+    }))
+
     return [{
       label: obj.objName,
       value: `s_${obj.id}`,
@@ -141,7 +144,7 @@ const DemoQueryBuilder = () => {
           }
         }
       } else if (['treemultiselect'].includes(item.fieldType)) {
-        function formatList (list) {
+        function formatList(list) {
           return list.map(s => {
             const o = {
               title: s.label,
@@ -219,7 +222,7 @@ const DemoQueryBuilder = () => {
   }
 
   const onConfigChanged = (e) => {
-    const {detail: {config, _initTree, _initValue}} = e
+    const { detail: { config, _initTree, _initValue } } = e
     console.log("Updating config...");
     setState({
       ...state,
@@ -239,13 +242,13 @@ const DemoQueryBuilder = () => {
   const switchShowLock = () => {
     const newConfig = clone(state.config);
     newConfig.settings.showLock = !newConfig.settings.showLock;
-    setState({...state, config: newConfig});
+    setState({ ...state, config: newConfig });
   };
 
   const resetValue = () => {
     setState({
       ...state,
-      tree: initTree, 
+      tree: initTree,
     });
   };
 
@@ -267,7 +270,7 @@ const DemoQueryBuilder = () => {
   const importFromSpel = () => {
     const [tree, spelErrors] = loadFromSpel(state.spelStr, state.config);
     setState({
-      ...state, 
+      ...state,
       tree: tree ? checkTree(tree, state.config) : state.tree,
       spelErrors
     });
@@ -276,19 +279,19 @@ const DemoQueryBuilder = () => {
   const clearValue = () => {
     setState({
       ...state,
-      tree: loadTree(emptyInitValue), 
+      tree: loadTree(emptyInitValue),
     });
   };
   const renderBuilder = useCallback((bprops) => {
     memo._actions = bprops.actions;
     return (
-      <div className="query-builder-container" style={{padding: "10px"}}>
+      <div className="query-builder-container" style={{ padding: "10px" }}>
         <div className="query-builder qb-lite">
           <Builder {...bprops} />
         </div>
       </div>
     );
-  // eslint-disable-next-line
+    // eslint-disable-next-line
   }, []);
   const onChange = useCallback((immutableTree, config, actionMeta) => {
     console.log('config: ', config);
@@ -298,11 +301,11 @@ const DemoQueryBuilder = () => {
     memo.immutableTree = immutableTree;
     memo.config = config;
     updateResult();
-  // eslint-disable-next-line
+    // eslint-disable-next-line
   }, []);
 
   const updateResult = throttle(() => {
-    setState(prevState => ({...prevState, tree: memo.immutableTree, config: memo.config}));
+    setState(prevState => ({ ...prevState, tree: memo.immutableTree, config: memo.config }));
   }, 100);
 
   const handleFactChange = (factObjId) => {
@@ -360,11 +363,11 @@ const DemoQueryBuilder = () => {
       const { data } = await fetchRulesFactOne({ factObjId, ruleId })
 
       setFormulaList(factFormulaList(data))
-      
+
       const stateObj = {
-        ...state, 
+        ...state,
       }
-      const {config} = state
+      const { config } = state
       config.fields = factFields(data)
       if (spel) {
         const [tree, spelErrors] = loadFromSpel(spel, config);
@@ -387,7 +390,7 @@ const DemoQueryBuilder = () => {
         value: v.id
       }))
       setReturnList(arr)
-  
+
     } catch (error) {
     }
   }
@@ -396,7 +399,7 @@ const DemoQueryBuilder = () => {
     navigate(-1)
   }
 
-  const renderResult = ({tree: immutableTree, config}) => {
+  const renderResult = ({ tree: immutableTree, config }) => {
     const isValid = isValidTree(immutableTree);
     const [spel, spelErrors] = _spelFormat(immutableTree, config);
 
@@ -405,11 +408,11 @@ const DemoQueryBuilder = () => {
         {isValid ? null : <pre style={preErrorStyle}>{"Tree has errors"}</pre>}
         <br />
         <div>
-        表达式: 
-          { spelErrors.length > 0 
+          表达式:
+          {spelErrors.length > 0
             && <pre style={preErrorStyle}>
               {stringify(spelErrors, undefined, 2)}
-            </pre> 
+            </pre>
           }
           <pre style={preStyle}>
             {stringify(spel, undefined, 2)}
@@ -438,7 +441,7 @@ const DemoQueryBuilder = () => {
   }
 
   const onFinish = async (values) => {
-    const {tree: immutableTree, config} = state
+    const { tree: immutableTree, config } = state
     const [spel] = _spelFormat(immutableTree, config)
     if (!spel) {
       message.error('请配置至少一条规则')
@@ -459,15 +462,38 @@ const DemoQueryBuilder = () => {
       if (Array.isArray(params.simpleRuleValue)) {
         params.simpleRuleValue = params.simpleRuleValue.join(',')
       }
+      if (valueType === 'json') {
+        try {
+          params.simpleRuleValue = JSON.stringify(JSON.parse(params.simpleRuleValue))
+        } catch (error) {
+          message.error('格式化失败, 请检查需要格式化的文本')
+          return
+        }
+      }
       console.log('params: ', params);
-      const { msg } = await saveRules(params)
-      message.success(msg)
+      await saveRules(params)
+      message.success('操作成功')
     } catch (error) {
     }
   };
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
+
+  const checkValueFormat = () => {
+    const value = form.getFieldValue('simpleRuleValue')
+    if (!value) {
+      message.error('请输入返回结果后校验！')
+      return
+    }
+    try {
+      const formattedJson = JSON.stringify(JSON.parse(value), null, 2)
+      form.setFieldValue('simpleRuleValue', formattedJson)
+    } catch (error) {
+      console.log('errorJson: ', error);
+      message.error('格式化失败, 请检查需要格式化的文本')
+    }
+  }
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -485,7 +511,7 @@ const DemoQueryBuilder = () => {
           <Button className="btn-margin" onClick={validate}>校验</Button>
           <Button className="btn-margin" onClick={switchShowLock}>显示锁定: {state.config.settings.showLock ? "显示" : "隐藏"}</Button>
         </div>
-        
+
         <Query
           {...state.config}
           value={state.tree}
@@ -497,10 +523,10 @@ const DemoQueryBuilder = () => {
           <input className="query-import-input" type="text" value={state.spelStr} onChange={onChangeSpelStr} />
           <Button onClick={importFromSpel}>导入规则</Button>
           <br />
-          { state.spelErrors.length > 0 
-              && <pre style={preErrorStyle}>
-                {stringify(state.spelErrors, undefined, 2)}
-              </pre> 
+          {state.spelErrors.length > 0
+            && <pre style={preErrorStyle}>
+              {stringify(state.spelErrors, undefined, 2)}
+            </pre>
           }
         </div>
 
@@ -523,6 +549,20 @@ const DemoQueryBuilder = () => {
     return dom
   }
 
+  const renderJsonPre = () => {
+    let dom
+    if (valueType === 'json') {
+      dom = (
+        <>
+          <Button type="primary" className="formula" onClick={checkValueFormat}>
+            格式化
+          </Button>
+        </>
+      )
+    }
+    return dom
+  }
+
   const renderReturnField = () => {
     let dom = (
       <Form.Item
@@ -536,11 +576,28 @@ const DemoQueryBuilder = () => {
         ]}
       >
         <Input
-          disabled={ valueType === 'formula' }
+          disabled={valueType === 'formula'}
         />
       </Form.Item>
     )
-    if (valueType === 'select') {
+    if (valueType === 'json') {
+      dom = (
+        <Form.Item
+          label="返回结果"
+          name="simpleRuleValue"
+          rules={[
+            {
+              required: true,
+              message: '请输入返回结果',
+            },
+          ]}
+        >
+          <TextArea
+            autoSize={{ minRows: 4, maxRows: 30 }}
+          />
+        </Form.Item>
+      )
+    } else if (valueType === 'select') {
       dom = (
         <>
           <Form.Item
@@ -672,8 +729,8 @@ const DemoQueryBuilder = () => {
               options={factList}
             />
           </Form.Item>
-          
-          { renderBox() }
+
+          {renderBox()}
 
           <Form.Item
             label="返回结果类型"
@@ -703,14 +760,20 @@ const DemoQueryBuilder = () => {
                   value: 'formula',
                   label: '公式计算',
                 },
+                {
+                  value: 'json',
+                  label: 'JSON',
+                },
               ]}
             />
           </Form.Item>
 
-          { renderFormula() }
+          {renderFormula()}
 
-          { renderReturnField() }
-          
+          {renderReturnField()}
+
+          {renderJsonPre()}
+
 
           <Form.Item>
             <Button type="primary" htmlType="submit">
@@ -722,14 +785,14 @@ const DemoQueryBuilder = () => {
           </Form.Item>
         </Form>
       </div>
-      
+
       <FormulaModal
-        show={ isModalOpen }
-        formulaList={ formulaList }
-        ruleId={ ruleId }
-        formulaText={ formulaText }
-        setReturnValue={ setReturnValue }
-        setIsModalOpen={ setIsModalOpen }
+        show={isModalOpen}
+        formulaList={formulaList}
+        ruleId={ruleId}
+        formulaText={formulaText}
+        setReturnValue={setReturnValue}
+        setIsModalOpen={setIsModalOpen}
       />
     </div>
   );

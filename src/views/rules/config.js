@@ -148,6 +148,7 @@ const ruleConfig = () => {
         "text": {
           "operators": [
             "equal",
+            "scontains",
           ],
           "widgetProps": {},
           "opProps": {}

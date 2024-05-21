@@ -580,7 +580,7 @@ const DemoQueryBuilder = () => {
         />
       </Form.Item>
     )
-    if (valueType === 'json') {
+    if (valueType === 'json' || valueType === 'script') {
       dom = (
         <Form.Item
           label="返回结果"
@@ -763,6 +763,10 @@ const DemoQueryBuilder = () => {
                 {
                   value: 'json',
                   label: 'JSON',
+                },
+                {
+                  value: 'groovyScript',
+                  label: 'GroovyScript',
                 },
               ]}
             />

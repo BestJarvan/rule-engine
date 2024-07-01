@@ -10,3 +10,18 @@
 .formula {
   margin-bottom: 12px;
 }
+
+.btns {
+  padding-left: 30px;
+}
+
+.sort {
+  margin-top: 30px;
+  padding-left: 30px;
+}
+.rule-wrap {
+  padding-top: 26px;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  margin-bottom: 26px;
+}

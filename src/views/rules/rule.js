@@ -1,7 +1,10 @@
-import React, { useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
 import {
   Button, InputNumber
 } from 'antd';
+import {
+  DeleteOutlined
+} from '@ant-design/icons';
 import {
   Query, Builder, Utils,
 } from "@bestjarvan/helper-rule-engine";
@@ -40,24 +43,6 @@ const DemoQueryBuilder = (props) => {
   console.log('prop2222s: ', props);
   const memo = {};
 
-  // const [state, setState] = useState({
-  //   tree: initTree,
-  //   config: loadedConfig,
-  //   spelStr: "",
-  //   spelErrors: [],
-  // });
-
-
-  // useEffect(() => {
-  //   if (props.state.config.fields) {
-  //     console.log('props: ', props);
-  //     // const state1 = JSON.parse(JSON.stringify(props.state))
-  //     // console.log('state1: ', state1);
-  //     // setState({ ...state1 })
-  //     setState({ ...props.state })
-  //   }
-  // }, [props.state])
-
   const setState = (obj) => {
     props.onUpdateState(obj)
   }
@@ -65,27 +50,40 @@ const DemoQueryBuilder = (props) => {
   const switchShowLock = () => {
     const newConfig = clone(props.state.config);
     newConfig.settings.showLock = !newConfig.settings.showLock;
-    setState({ ...props.state, config: newConfig });
+    setState({ state: { ...props.state, config: newConfig }, index: props.index });
   };
 
   const resetValue = () => {
     setState({
-      ...props.state,
-      tree: initTree,
+      state: {
+        ...props.state,
+        tree: initTree,
+      },
+      index: props.index
     });
   };
 
   const validate = () => {
     setState({
-      ...props.state,
-      tree: checkTree(props.state.tree, props.state.config)
+      state: {
+        ...props.state,
+        tree: checkTree(props.state.tree, props.state.config),
+      },
+      index: props.index
     });
   };
 
+  const deleteItem = () => {
+    props.onDelete(props.index)
+  }
+
   const clearValue = () => {
     setState({
-      ...props.state,
-      tree: loadTree(emptyInitValue),
+      state: {
+        ...props.state,
+        tree: loadTree(emptyInitValue),
+      },
+      index: props.index
     });
   };
   const renderBuilder = useCallback((bprops) => {
@@ -111,7 +109,7 @@ const DemoQueryBuilder = (props) => {
   }, []);
 
   const updateResult = throttle(() => {
-    setState(prevState => ({ ...prevState, tree: memo.immutableTree, config: memo.config }));
+    setState({ state: { ...props.state, tree: memo.immutableTree, config: memo.config }, index: props.index });
   }, 100);
 
   const renderResult = ({ tree: immutableTree, config }) => {
@@ -131,10 +129,13 @@ const DemoQueryBuilder = (props) => {
   return (
     <div className="rule-wrap">
       <div className="btns">
-        <Button onClick={resetValue}>重置</Button>
-        <Button className="btn-margin" onClick={clearValue}>清空</Button>
-        <Button className="btn-margin" onClick={validate}>校验</Button>
-        <Button className="btn-margin" onClick={switchShowLock}>显示锁定: {props.state.config.settings.showLock ? "显示" : "隐藏"}</Button>
+        <div>
+          <Button onClick={resetValue}>重置</Button>
+          <Button className="btn-margin" onClick={clearValue}>清空</Button>
+          <Button className="btn-margin" onClick={validate}>校验</Button>
+          <Button className="btn-margin" onClick={switchShowLock}>显示锁定: {props.state.config.settings.showLock ? "显示" : "隐藏"}</Button>
+        </div>
+        <Button type="primary" danger shape="circle" icon={<DeleteOutlined />} onClick={deleteItem} />
       </div>
       <div className="sort">
         <span>优先级 </span>

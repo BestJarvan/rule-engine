@@ -61,7 +61,17 @@ const DemoQueryBuilder = () => {
     config: loadedConfig,
     spelStr: "",
     spelErrors: [],
+    id: uuid(),
   }]);
+
+  const [memo, setMemo] = useState({
+    tree: initTree,
+    config: loadedConfig,
+    spelStr: "",
+    spelErrors: [],
+    id: uuid(),
+  });
+
 
   // text、 select、 formula
   const [valueType, setValueType] = useState('text')
@@ -219,8 +229,8 @@ const DemoQueryBuilder = () => {
 
   const clearValue = () => {
     setState([{
-      ...state[0],
-      tree: loadTree(emptyInitValue),
+      ...memo,
+      tree: initTree,
     }]);
   };
 
@@ -277,24 +287,21 @@ const DemoQueryBuilder = () => {
   const fetchFields = async (factObjId, spel) => {
     try {
       const { data } = await fetchRulesFactOne({ factObjId, ruleId })
-      console.log(11);
       setFormulaList(factFormulaList(data))
-      console.log(12);
       const stateObj = {
-        ...state[0],
+        ...memo,
+        id: uuid(),
       }
-      const { config } = state[0]
+      const { config } = memo
       config.fields = factFields(data)
       if (spel) {
-        console.log('spel: ', spel);
         const [tree, spelErrors] = loadFromSpel(spel, config);
-        stateObj['tree'] = tree ? checkTree(tree, config) : state[0].tree
-        console.log('stateObj: ', stateObj);
+        stateObj['tree'] = tree ? checkTree(tree, config) : memo.tree
         stateObj['spelErrors'] = spelErrors
         initTree = stateObj['tree']
       }
       stateObj['config'] = config
-      console.log('stateObj: ', stateObj);
+      setMemo(stateObj)
       setState([stateObj])
 
       const { data: { list = [] } } = await fetchAttrList({
@@ -329,18 +336,25 @@ const DemoQueryBuilder = () => {
   }
 
   const onFinish = async (values) => {
-    const { tree: immutableTree, config } = state
-    const [spel] = _spelFormat(immutableTree, config)
-    if (!spel) {
-      message.error('请配置至少一条规则')
-      return
+    const spelArr = []
+    for (let i = 0; i < state.length; i++) {
+      const { tree: immutableTree, config } = state[i];
+      const [spel] = _spelFormat(immutableTree, config)
+      if (spel) {
+        spelArr.push(spel)
+      } else {
+        message.error('请配置至少一条规则')
+        return
+      }
     }
+
     try {
       const params = JSON.parse(JSON.stringify({
         ...values,
         sceneCode,
-        expression: spel
+        expression: spelArr
       }))
+      console.log('params: ', params);
       if (!isCopy && ruleId) {
         params['id'] = ruleId
       }
@@ -359,8 +373,8 @@ const DemoQueryBuilder = () => {
         }
       }
       console.log('params: ', params);
-      await saveRules(params)
-      message.success('操作成功')
+      // await saveRules(params)
+      // message.success('操作成功')
     } catch (error) {
     }
   };
@@ -387,8 +401,20 @@ const DemoQueryBuilder = () => {
     setIsModalOpen(true);
   };
 
-  const onUpdateState = (e) => {
-    // setState(e)
+  const onDelete = (index) => {
+    setState(prevState => {
+      prevState.splice(index, 1)
+      return [...prevState]
+    })
+  }
+
+  const onUpdateState = ({ state: v, index }) => {
+    setState(prevState => {
+      prevState[index] = {
+        ...v
+      }
+      return [...prevState]
+    })
   }
 
   const filterOption = (input, option) =>
@@ -397,7 +423,7 @@ const DemoQueryBuilder = () => {
   const renderBox = () => {
     return (
       state.map((v, i) => (
-        <Rule state={v} key={i} onUpdateState={onUpdateState} />
+        <Rule state={v} key={v.id} index={i} onUpdateState={onUpdateState} onDelete={onDelete} />
       ))
     )
   }
@@ -412,6 +438,17 @@ const DemoQueryBuilder = () => {
       )
     }
     return dom
+  }
+
+  const handleAddOne = () => {
+    const arr = state
+    arr.push({
+      ...memo,
+      id: uuid()
+    })
+    console.log('arr: ', arr);
+
+    setState([...arr])
   }
 
   const renderJsonPre = () => {
@@ -577,6 +614,12 @@ const DemoQueryBuilder = () => {
           </Form.Item>
 
           {renderBox()}
+
+          <Form.Item>
+            <Button type="primary" onClick={handleAddOne}>
+              新增条件
+            </Button>
+          </Form.Item>
 
           <Form.Item
             label="返回结果类型"

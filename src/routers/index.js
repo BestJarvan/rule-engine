@@ -4,6 +4,7 @@ import {
 import Index from '../views/index';
 import ErrorPage from '../views/error'
 import Rules from '../views/rules/index';
+import List from '../views/rules/list';
 import Home from '../views/home';
 
 export const router = createHashRouter([
@@ -19,6 +20,10 @@ export const router = createHashRouter([
       {
         path: "rules",
         element: <Rules />,
+      },
+      {
+        path: "finance",
+        element: <List />,
       }
     ]
   },

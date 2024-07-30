@@ -1,25 +1,18 @@
-import React, { useEffect, useCallback } from "react";
-import {
-  Button, InputNumber
-} from 'antd';
-import {
-  DeleteOutlined
-} from '@ant-design/icons';
-import {
-  Query, Builder, Utils,
-} from "@bestjarvan/helper-rule-engine";
+import React, { useCallback } from "react";
+import { Button, InputNumber } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
+import { Query, Builder, Utils } from "@bestjarvan/helper-rule-engine";
 import throttle from "lodash/throttle";
 import loadConfig from "./config";
 import clone from "clone";
-import './index.css'
+import "./index.css";
 
-const {
-  checkTree,
-  loadTree,
-  uuid,
-  isValidTree
-} = Utils;
-const preErrorStyle = { backgroundColor: "lightpink", margin: "10px", padding: "10px" };
+const { checkTree, loadTree, uuid, isValidTree } = Utils;
+const preErrorStyle = {
+  backgroundColor: "lightpink",
+  margin: "10px",
+  padding: "10px",
+};
 
 const emptyInitValue = { id: uuid(), type: "group" };
 const loadedConfig = loadConfig();
@@ -27,7 +20,7 @@ let initValue = emptyInitValue;
 let initTree;
 initTree = checkTree(loadTree(initValue), loadedConfig);
 
-console.log('loadedConfig: ', loadedConfig);
+console.log("loadedConfig: ", loadedConfig);
 
 // Trick to hot-load new config when you edit `config.tsx`
 const updateEvent = new CustomEvent("update", {
@@ -35,22 +28,25 @@ const updateEvent = new CustomEvent("update", {
     config: loadedConfig,
     _initTree: initTree,
     _initValue: initValue,
-  }
+  },
 });
 window.dispatchEvent(updateEvent);
 
-const DemoQueryBuilder = (props) => {
-  console.log('prop2222s: ', props);
+const DemoQueryBuilder = props => {
+  console.log("prop2222s: ", props);
   const memo = {};
 
-  const setState = (obj) => {
-    props.onUpdateState(obj)
-  }
+  const setState = obj => {
+    props.onUpdateState(obj);
+  };
 
   const switchShowLock = () => {
     const newConfig = clone(props.state.config);
     newConfig.settings.showLock = !newConfig.settings.showLock;
-    setState({ state: { ...props.state, config: newConfig }, index: props.index });
+    setState({
+      state: { ...props.state, config: newConfig },
+      index: props.index,
+    });
   };
 
   const resetValue = () => {
@@ -59,7 +55,7 @@ const DemoQueryBuilder = (props) => {
         ...props.state,
         tree: initTree,
       },
-      index: props.index
+      index: props.index,
     });
   };
 
@@ -69,13 +65,13 @@ const DemoQueryBuilder = (props) => {
         ...props.state,
         tree: checkTree(props.state.tree, props.state.config),
       },
-      index: props.index
+      index: props.index,
     });
   };
 
   const deleteItem = () => {
-    props.onDelete(props.index)
-  }
+    props.onDelete(props.index);
+  };
 
   const clearValue = () => {
     setState({
@@ -83,10 +79,10 @@ const DemoQueryBuilder = (props) => {
         ...props.state,
         tree: loadTree(emptyInitValue),
       },
-      index: props.index
+      index: props.index,
     });
   };
-  const renderBuilder = useCallback((bprops) => {
+  const renderBuilder = useCallback(bprops => {
     memo._actions = bprops.actions;
     return (
       <div className="query-builder-container" style={{ padding: "10px" }}>
@@ -98,10 +94,9 @@ const DemoQueryBuilder = (props) => {
     // eslint-disable-next-line
   }, []);
   const onChange = useCallback((immutableTree, config, actionMeta) => {
-    console.log('config: ', config);
-    console.log('immutableTree: ', immutableTree);
-    if (actionMeta)
-      console.info(actionMeta);
+    console.log("config: ", config);
+    console.log("immutableTree: ", immutableTree);
+    if (actionMeta) console.info(actionMeta);
     memo.immutableTree = immutableTree;
     memo.config = config;
     updateResult();
@@ -109,7 +104,10 @@ const DemoQueryBuilder = (props) => {
   }, []);
 
   const updateResult = throttle(() => {
-    setState({ state: { ...props.state, tree: memo.immutableTree, config: memo.config }, index: props.index });
+    setState({
+      state: { ...props.state, tree: memo.immutableTree, config: memo.config },
+      index: props.index,
+    });
   }, 100);
 
   const renderResult = ({ tree: immutableTree, config }) => {
@@ -122,8 +120,8 @@ const DemoQueryBuilder = (props) => {
     );
   };
 
-  const onChangeInput = (value) => {
-    console.log('changed', value);
+  const onChangeInput = value => {
+    console.log("changed", value);
   };
 
   return (
@@ -131,11 +129,23 @@ const DemoQueryBuilder = (props) => {
       <div className="btns">
         <div>
           <Button onClick={resetValue}>重置</Button>
-          <Button className="btn-margin" onClick={clearValue}>清空</Button>
-          <Button className="btn-margin" onClick={validate}>校验</Button>
-          <Button className="btn-margin" onClick={switchShowLock}>显示锁定: {props.state.config.settings.showLock ? "显示" : "隐藏"}</Button>
+          <Button className="btn-margin" onClick={clearValue}>
+            清空
+          </Button>
+          <Button className="btn-margin" onClick={validate}>
+            校验
+          </Button>
+          <Button className="btn-margin" onClick={switchShowLock}>
+            显示锁定: {props.state.config.settings.showLock ? "显示" : "隐藏"}
+          </Button>
         </div>
-        <Button type="primary" danger shape="circle" icon={<DeleteOutlined />} onClick={deleteItem} />
+        <Button
+          type="primary"
+          danger
+          shape="circle"
+          icon={<DeleteOutlined />}
+          onClick={deleteItem}
+        />
       </div>
       <div className="sort">
         <span>优先级 </span>
@@ -156,12 +166,9 @@ const DemoQueryBuilder = (props) => {
         renderBuilder={renderBuilder}
       />
 
-      <div className="query-builder-result">
-        {renderResult(props.state)}
-      </div>
+      <div className="query-builder-result">{renderResult(props.state)}</div>
     </div>
-  )
+  );
 };
-
 
 export default DemoQueryBuilder;

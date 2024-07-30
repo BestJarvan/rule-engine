@@ -150,7 +150,7 @@ const DemoQueryBuilder = () => {
               title: s.label,
               value: s.value,
             }
-            if (s.children.length) {
+            if (s.children && s.children.length) {
               o['children'] = formatList(s.children)
             }
             return o

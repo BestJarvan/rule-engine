@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { Button, InputNumber } from "antd";
+import { Button } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { Query, Builder, Utils } from "@bestjarvan/helper-rule-engine";
 import throttle from "lodash/throttle";
@@ -120,12 +120,8 @@ const DemoQueryBuilder = props => {
     );
   };
 
-  const onChangeInput = value => {
-    console.log("changed", value);
-  };
-
   return (
-    <div className="rule-wrap">
+    <div>
       <div className="btns">
         <div>
           <Button onClick={resetValue}>重置</Button>
@@ -145,18 +141,6 @@ const DemoQueryBuilder = props => {
           shape="circle"
           icon={<DeleteOutlined />}
           onClick={deleteItem}
-        />
-      </div>
-      <div className="sort">
-        <span>优先级 </span>
-        <InputNumber
-          style={{
-            width: 220,
-          }}
-          placeholder="请输入优先级"
-          onChange={onChangeInput}
-          min={0}
-          max={999}
         />
       </div>
       <Query

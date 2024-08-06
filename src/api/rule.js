@@ -71,3 +71,11 @@ export function saveAllRules(data) {
     data,
   });
 }
+// 查询规则
+export function fetchAllRulesDetail(data) {
+  return request({
+    url: "/rule-link/rule/scene/one",
+    method: "post",
+    data,
+  });
+}

@@ -14,10 +14,10 @@ import loadConfig from "./config";
 import {
   fetchRulesFact,
   fetchRulesFactOne,
-  fetchRuleDetail,
   saveAllRules,
   fetchAttrList,
   fetchAttrDetails,
+  fetchAllRulesDetail,
   fetchQueryPropertyUrlData,
 } from "../../api/rule";
 import Rule from "./rule";
@@ -30,8 +30,6 @@ const loadedConfig = loadConfig();
 let initValue = emptyInitValue;
 let initTree;
 initTree = checkTree(loadTree(initValue), loadedConfig);
-
-console.log("loadedConfig: ", loadedConfig);
 
 // Trick to hot-load new config when you edit `config.tsx`
 const updateEvent = new CustomEvent("update", {
@@ -47,11 +45,8 @@ const DemoQueryBuilder = () => {
   const [form] = Form.useForm();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const isEdit = searchParams.get("type") !== "add";
-  const isCopy = searchParams.get("type") === "copy";
   const sceneCode = searchParams.get("scene");
-  const ruleName = searchParams.get("name");
-  const ruleId = searchParams.get("id");
+  const sceneName = searchParams.get("name");
 
   const [state, setState] = useState([
     {
@@ -63,7 +58,7 @@ const DemoQueryBuilder = () => {
     },
   ]);
 
-  const [memo, setMemo] = useState({
+  const [memo] = useState({
     tree: initTree,
     config: loadedConfig,
     spelStr: "",
@@ -148,7 +143,6 @@ const DemoQueryBuilder = () => {
       }
       obj[`data.${item.factFieldCode}`] = filed;
     });
-    console.log("obj: ", obj);
     return obj;
   };
 
@@ -161,13 +155,18 @@ const DemoQueryBuilder = () => {
         label: v.objName,
       }));
       setFactList(list);
-      if (isEdit) {
-        fetchRulesDetail();
-      } else {
-        fetchFields(list[0].value);
+      fetchRulesDetail();
+    } catch (error) {}
+  };
+
+  const fetchRulesDetail = async () => {
+    try {
+      const { data } = await fetchAllRulesDetail({ sceneCode, sceneName });
+      if (!data.factObjId) {
+        fetchFields(factList[0].value);
         form.setFieldsValue({
-          factObjId: list[0].value,
-          ruleName,
+          factObjId: factList[0].value,
+          sceneName,
           rules: [
             {
               priority: 0,
@@ -175,37 +174,14 @@ const DemoQueryBuilder = () => {
             },
           ],
         });
-      }
-    } catch (error) {}
-  };
-
-  const fetchRulesDetail = async () => {
-    try {
-      const { data } = await fetchRuleDetail({ id: ruleId });
-      fetchFields(data.factObjId, data.expression);
-
-      // setValueType(data.simpleRuleValueType);
-
-      // data.simpleResultPropertyId &&
-      //   onChangeReturnAttr(data.simpleResultPropertyId);
-
-      const obj = {
-        factObjId: data.factObjId,
-        enable: !!data.enable,
-
-        // priority: data.priority,
-        // simpleResultPropertyId: data.simpleResultPropertyId,
-        // simpleRuleValueType: data.simpleRuleValueType,
-        // simpleRuleValue: data.simpleRuleValueArray || data.simpleRuleValue,
-      };
-
-      if (isCopy) {
-        obj["ruleName"] = void 0;
       } else {
-        obj["ruleName"] = ruleName;
-      }
+        fetchFields(data.factObjId, data.rules);
 
-      form.setFieldsValue(obj);
+        form.setFieldsValue({
+          ...data,
+          rules: [],
+        });
+      }
     } catch (error) {}
   };
 
@@ -230,11 +206,13 @@ const DemoQueryBuilder = () => {
     fetchFields(factObjId);
   };
 
-  const onChangeReturnAttr = async (id, index) => {
+  const onChangeReturnAttr = async (id, index, flag = false) => {
     try {
       const rules = form.getFieldValue("rules");
-      rules[index].simpleRuleValue = void 0;
-      form.setFieldValue("rules", rules);
+      if (!flag) {
+        rules[index].simpleRuleValue = void 0;
+        form.setFieldValue("rules", rules);
+      }
       const { data } = await fetchAttrDetails({ id });
       if (data.fromType === 2) {
         // 配置属性源
@@ -258,38 +236,53 @@ const DemoQueryBuilder = () => {
     } catch (error) {}
   };
 
-  const fetchFields = async (factObjId, spel) => {
+  const fetchAttrPropsList = async () => {
+    const {
+      data: { list = [] },
+    } = await fetchAttrList({
+      onlySelect: true,
+      pageNum: 1,
+      pageSize: 9999,
+      type: 2,
+    });
+
+    const arr = list.map(v => ({
+      label: v.name,
+      value: v.id,
+    }));
+    setReturnList(arr);
+  };
+
+  const fetchFields = async (factObjId, spelArr) => {
     try {
-      const { data } = await fetchRulesFactOne({ factObjId, ruleId });
-      const stateObj = {
-        ...memo,
-        id: uuid(),
-      };
+      const { data } = await fetchRulesFactOne({ factObjId });
+      fetchAttrPropsList();
+
+      const rules = [];
+
       const { config } = memo;
       config.fields = factFields(data);
-      if (spel) {
-        const [tree, spelErrors] = loadFromSpel(spel, config);
-        stateObj["tree"] = tree ? checkTree(tree, config) : memo.tree;
-        stateObj["spelErrors"] = spelErrors;
-        initTree = stateObj["tree"];
-      }
-      stateObj["config"] = config;
-      setMemo(stateObj);
-      setState([stateObj]);
+      if (spelArr?.length) {
+        spelArr.forEach(v => {
+          const stateObj = {
+            ...memo,
+            id: uuid(),
+          };
+          const [tree, spelErrors] = loadFromSpel(v.expression, config);
+          stateObj["tree"] = tree ? checkTree(tree, config) : memo.tree;
+          stateObj["spelErrors"] = spelErrors;
+          initTree = stateObj["tree"];
+          stateObj["config"] = config;
+          rules.push(stateObj);
 
-      const {
-        data: { list = [] },
-      } = await fetchAttrList({
-        onlySelect: true,
-        pageNum: 1,
-        pageSize: 9999,
-        type: 2,
-      });
-      const arr = list.map(v => ({
-        label: v.name,
-        value: v.id,
-      }));
-      setReturnList(arr);
+          v.simpleResultPropertyId &&
+            onChangeReturnAttr(v.simpleResultPropertyId, null, true);
+          v.simpleRuleValue = v.simpleRuleValue.split(",");
+        });
+        setState([...rules]);
+
+        form.setFieldValue("rules", spelArr);
+      }
     } catch (error) {}
   };
 
@@ -298,7 +291,6 @@ const DemoQueryBuilder = () => {
   };
 
   const onFinish = async values => {
-    console.log("values: ", values);
     const spelArr = [];
     for (let i = 0; i < state.length; i++) {
       const { tree: immutableTree, config } = state[i];
@@ -323,13 +315,12 @@ const DemoQueryBuilder = () => {
         })
       );
       console.log("params: ", params);
-      if (!isCopy && ruleId) {
-        params["id"] = ruleId;
-      }
 
-      if (Array.isArray(params.simpleRuleValue)) {
-        params.simpleRuleValue = params.simpleRuleValue.join(",");
-      }
+      params.rules.forEach(v => {
+        if (Array.isArray(v.simpleRuleValue)) {
+          v.simpleRuleValue = v.simpleRuleValue.join(",");
+        }
+      });
 
       await saveAllRules(params);
       message.success("操作成功");
@@ -362,13 +353,10 @@ const DemoQueryBuilder = () => {
     const dom = (
       <Form.List name="rules">
         {(fields, { add, remove }) => {
-          console.log("fie222111lds: ", fields);
           return (
             <>
               {fields.map((v, i) => {
-                console.log("field11s: ", fields);
                 const stateItem = state[i];
-                console.log("stateItem: ", stateItem);
                 return (
                   <div className="rule-wrap" key={stateItem.id}>
                     <Rule
@@ -491,7 +479,7 @@ const DemoQueryBuilder = () => {
         >
           <Form.Item
             label="规则名称"
-            name="ruleName"
+            name="sceneName"
             disabled
             rules={[
               {
@@ -500,7 +488,7 @@ const DemoQueryBuilder = () => {
               },
             ]}
           >
-            <Input />
+            <Input disabled />
           </Form.Item>
 
           <Form.Item

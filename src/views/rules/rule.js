@@ -20,8 +20,6 @@ let initValue = emptyInitValue;
 let initTree;
 initTree = checkTree(loadTree(initValue), loadedConfig);
 
-console.log("loadedConfig: ", loadedConfig);
-
 // Trick to hot-load new config when you edit `config.tsx`
 const updateEvent = new CustomEvent("update", {
   detail: {
@@ -33,7 +31,6 @@ const updateEvent = new CustomEvent("update", {
 window.dispatchEvent(updateEvent);
 
 const DemoQueryBuilder = props => {
-  console.log("prop2222s: ", props);
   const memo = {};
 
   const setState = obj => {

@@ -74,7 +74,7 @@ const DemoQueryBuilder = () => {
   const isEdit = searchParams.get("type") !== "add";
   const isCopy = searchParams.get("type") === "copy";
   const sceneCode = searchParams.get("scene");
-  const sceneName = searchParams.get("name");
+  const ruleName = searchParams.get("name");
   const ruleId = searchParams.get("id");
 
   const [state, setState] = useState({
@@ -238,7 +238,7 @@ const DemoQueryBuilder = () => {
       };
 
       if (!isCopy) {
-        obj["sceneName"] = sceneName;
+        obj["ruleName"] = ruleName;
       }
 
       form.setFieldsValue(obj);
@@ -701,7 +701,7 @@ const DemoQueryBuilder = () => {
         >
           <Form.Item
             label="规则名称"
-            name="sceneName"
+            name="ruleName"
             rules={[
               {
                 required: true,
@@ -709,7 +709,7 @@ const DemoQueryBuilder = () => {
               },
             ]}
           >
-            <Input disabled />
+            <Input />
           </Form.Item>
 
           <Form.Item

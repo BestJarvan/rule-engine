@@ -1,11 +1,15 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  Button, InputNumber, Form, Input, Select, message, Switch
-} from 'antd';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import {
-  Query, Builder, Utils,
-} from "@bestjarvan/helper-rule-engine";
+  Button,
+  InputNumber,
+  Form,
+  Input,
+  Select,
+  message,
+  Switch,
+} from "antd";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { Query, Builder, Utils } from "@bestjarvan/helper-rule-engine";
 import throttle from "lodash/throttle";
 import loadConfig from "./config";
 import {
@@ -16,12 +20,12 @@ import {
   fetchAttrList,
   fetchAttrDetails,
   fetchQueryPropertyUrlData,
-} from '../../api/rule'
-import FormulaModal from '../../components/formula'
+} from "../../api/rule";
+import FormulaModal from "../../components/formula";
 import clone from "clone";
-import './index.css'
+import "./index.css";
 
-const { TextArea } = Input
+const { TextArea } = Input;
 const stringify = JSON.stringify;
 const {
   _spelFormat,
@@ -30,10 +34,19 @@ const {
   uuid,
   // loadFromJsonLogic,
   loadFromSpel,
-  isValidTree
+  isValidTree,
 } = Utils;
-const preStyle = { backgroundColor: "#eeeeee", margin: "10px", padding: "10px", borderRadius: "4px" };
-const preErrorStyle = { backgroundColor: "lightpink", margin: "10px", padding: "10px" };
+const preStyle = {
+  backgroundColor: "#eeeeee",
+  margin: "10px",
+  padding: "10px",
+  borderRadius: "4px",
+};
+const preErrorStyle = {
+  backgroundColor: "lightpink",
+  margin: "10px",
+  padding: "10px",
+};
 
 const emptyInitValue = { id: uuid(), type: "group" };
 const loadedConfig = loadConfig();
@@ -41,7 +54,7 @@ let initValue = emptyInitValue;
 let initTree;
 initTree = checkTree(loadTree(initValue), loadedConfig);
 
-console.log('loadedConfig: ', loadedConfig);
+console.log("loadedConfig: ", loadedConfig);
 
 // Trick to hot-load new config when you edit `config.tsx`
 const updateEvent = new CustomEvent("update", {
@@ -49,19 +62,20 @@ const updateEvent = new CustomEvent("update", {
     config: loadedConfig,
     _initTree: initTree,
     _initValue: initValue,
-  }
+  },
 });
 window.dispatchEvent(updateEvent);
 
 const DemoQueryBuilder = () => {
   const memo = {};
   const [form] = Form.useForm();
-  const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
-  const isEdit = searchParams.get('type') !== 'add'
-  const isCopy = searchParams.get('type') === 'copy'
-  const sceneCode = searchParams.get('scene')
-  const ruleId = searchParams.get('id')
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const isEdit = searchParams.get("type") !== "add";
+  const isCopy = searchParams.get("type") === "copy";
+  const sceneCode = searchParams.get("scene");
+  const sceneName = searchParams.get("name");
+  const ruleId = searchParams.get("id");
 
   const [state, setState] = useState({
     tree: initTree,
@@ -71,135 +85,147 @@ const DemoQueryBuilder = () => {
   });
 
   // text、 select、 formula
-  const [valueType, setValueType] = useState('text')
+  const [valueType, setValueType] = useState("text");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [factList, setFactList] = useState([])
-  const [returnList, setReturnList] = useState([])
-  const [returnValueList, setReturnValueList] = useState([])
-  const [formulaList, setFormulaList] = useState([])
-  const [formulaText, setFormulaText] = useState('')
+  const [factList, setFactList] = useState([]);
+  const [returnList, setReturnList] = useState([]);
+  const [returnValueList, setReturnValueList] = useState([]);
+  const [formulaList, setFormulaList] = useState([]);
+  const [formulaText, setFormulaText] = useState("");
 
   useEffect(() => {
-    fetchAllRulesObj()
+    fetchAllRulesObj();
     window.addEventListener("update", onConfigChanged);
     return () => {
       window.removeEventListener("update", onConfigChanged);
     };
     // eslint-disable-next-line
-  }, [factList.length])
+  }, [factList.length]);
 
-  const factFormulaList = (obj) => {
-    const o = JSON.parse(JSON.stringify(obj))
-    const l = o.fields.filter(v => v.fieldType === 'number').map(s => ({
-      ...s,
-      label: s.factFieldName,
-      value: `f_${s.id}`,
-      isLeaf: true
-    }))
+  const factFormulaList = obj => {
+    const o = JSON.parse(JSON.stringify(obj));
+    const l = o.fields
+      .filter(v => v.fieldType === "number")
+      .map(s => ({
+        ...s,
+        label: s.factFieldName,
+        value: `f_${s.id}`,
+        isLeaf: true,
+      }));
 
-    return [{
-      label: obj.objName,
-      value: `s_${obj.id}`,
-      children: l
-    }]
-  }
+    return [
+      {
+        label: obj.objName,
+        value: `s_${obj.id}`,
+        children: l,
+      },
+    ];
+  };
 
-  const factFields = (data) => {
-    const obj = {}
+  const factFields = data => {
+    const obj = {};
     data.fields.forEach(item => {
       const filed = {
         label: item.factFieldName,
         type: item.fieldType,
-      }
-      if (['multiselect', 'select'].includes(item.fieldType)) {
-        filed['valueSources'] = ['value']
-        if (item.fromType === 1 || (item.propertySelectList && item.propertySelectList.length)) {
+      };
+      if (["multiselect", "select"].includes(item.fieldType)) {
+        filed["valueSources"] = ["value"];
+        if (
+          item.fromType === 1 ||
+          (item.propertySelectList && item.propertySelectList.length)
+        ) {
           // 配置属性值
-          filed['fieldSettings'] = {
+          filed["fieldSettings"] = {
             listValues: item.propertySelectList.map(s => ({
               title: s.label,
-              value: item.propertyValueType === 'String' ? String(s.value) : Number(s.value)
-            }))
-          }
+              value:
+                item.propertyValueType === "String"
+                  ? String(s.value)
+                  : Number(s.value),
+            })),
+          };
         } else if (item.fromType === 2) {
           // 远端拉取属性源
-          filed['fieldSettings'] = {
+          filed["fieldSettings"] = {
             listValues: [],
             asyncFetch: async () => {
               try {
                 const { data } = await fetchQueryPropertyUrlData({
                   valueUrl: item.propertySelectUrl,
-                  requestBody: item.requestBody
-                })
+                  requestBody: item.requestBody,
+                });
 
                 return {
                   values: data.map(s => ({
                     title: s.label,
-                    value: item.propertyValueType === 'String' ? String(s.value) : Number(s.value)
-                  }))
-                }
-              } catch (error) {
-              }
-            }
-          }
+                    value:
+                      item.propertyValueType === "String"
+                        ? String(s.value)
+                        : Number(s.value),
+                  })),
+                };
+              } catch (error) {}
+            },
+          };
         }
-      } else if (['treemultiselect'].includes(item.fieldType)) {
+      } else if (["treemultiselect"].includes(item.fieldType)) {
         function formatList(list) {
           return list.map(s => {
             const o = {
               title: s.label,
               value: s.value,
-            }
+            };
             if (s.children && s.children.length) {
-              o['children'] = formatList(s.children)
+              o["children"] = formatList(s.children);
             }
-            return o
-          })
+            return o;
+          });
         }
-        const arr = formatList(item.propertySelectList)
-        filed['fieldSettings'] = {
+        const arr = formatList(item.propertySelectList);
+        filed["fieldSettings"] = {
           treeExpandAll: true,
-          listValues: arr
-        }
+          listValues: arr,
+        };
       }
-      obj[`data.${item.factFieldCode}`] = filed
-    })
-    console.log('obj: ', obj);
-    return obj
-  }
+      obj[`data.${item.factFieldCode}`] = filed;
+    });
+    console.log("obj: ", obj);
+    return obj;
+  };
 
   // 获取所有可选事实对象
   const fetchAllRulesObj = async () => {
     try {
-      const { data } = await fetchRulesFact({})
+      const { data } = await fetchRulesFact({});
       const list = data.map(v => ({
         value: v.id,
-        label: v.objName
-      }))
+        label: v.objName,
+      }));
       setFactList(list);
       if (isEdit) {
-        fetchRulesDetail()
+        fetchRulesDetail();
       } else {
-        fetchFields(list[0].value)
+        fetchFields(list[0].value);
         form.setFieldsValue({
-          factObjId: list[0].value
-        })
+          factObjId: list[0].value,
+        });
       }
-    } catch (error) {
-    }
-  }
+    } catch (error) {}
+  };
 
   const fetchRulesDetail = async () => {
     try {
-      const { data } = await fetchRuleDetail({ id: ruleId })
-      fetchFields(data.factObjId, data.expression)
+      const { data } = await fetchRuleDetail({ id: ruleId });
+      fetchFields(data.factObjId, data.expression);
 
-      setValueType(data.simpleRuleValueType)
+      setValueType(data.simpleRuleValueType);
 
-      data.simpleResultPropertyId && onChangeReturnAttr(data.simpleResultPropertyId)
+      data.simpleResultPropertyId &&
+        onChangeReturnAttr(data.simpleResultPropertyId);
 
       if (data.formulaText) {
-        setFormulaText(data.formulaText)
+        setFormulaText(data.formulaText);
       }
 
       const obj = {
@@ -208,21 +234,21 @@ const DemoQueryBuilder = () => {
         enable: !!data.enable,
         simpleResultPropertyId: data.simpleResultPropertyId,
         simpleRuleValueType: data.simpleRuleValueType,
-        simpleRuleValue: data.simpleRuleValueArray || data.simpleRuleValue
-      }
+        simpleRuleValue: data.simpleRuleValueArray || data.simpleRuleValue,
+      };
 
       if (!isCopy) {
-        obj['ruleName'] = data.ruleName
+        obj["sceneName"] = sceneName;
       }
 
-      form.setFieldsValue(obj)
+      form.setFieldsValue(obj);
+    } catch (error) {}
+  };
 
-    } catch (error) {
-    }
-  }
-
-  const onConfigChanged = (e) => {
-    const { detail: { config, _initTree, _initValue } } = e
+  const onConfigChanged = e => {
+    const {
+      detail: { config, _initTree, _initValue },
+    } = e;
     console.log("Updating config...");
     setState({
       ...state,
@@ -232,12 +258,12 @@ const DemoQueryBuilder = () => {
     initValue = _initValue;
   };
 
-  const setSimpleRuleValue = (e) => {
-    if (!e) return
+  const setSimpleRuleValue = e => {
+    if (!e) return;
     form.setFieldsValue({
-      simpleRuleValue: e
-    })
-  }
+      simpleRuleValue: e,
+    });
+  };
 
   const switchShowLock = () => {
     const newConfig = clone(state.config);
@@ -255,15 +281,15 @@ const DemoQueryBuilder = () => {
   const validate = () => {
     setState({
       ...state,
-      tree: checkTree(state.tree, state.config)
+      tree: checkTree(state.tree, state.config),
     });
   };
 
-  const onChangeSpelStr = (e) => {
+  const onChangeSpelStr = e => {
     const spelStr = e.target.value;
     setState({
       ...state,
-      spelStr
+      spelStr,
     });
   };
 
@@ -272,7 +298,7 @@ const DemoQueryBuilder = () => {
     setState({
       ...state,
       tree: tree ? checkTree(tree, state.config) : state.tree,
-      spelErrors
+      spelErrors,
     });
   };
 
@@ -282,7 +308,7 @@ const DemoQueryBuilder = () => {
       tree: loadTree(emptyInitValue),
     });
   };
-  const renderBuilder = useCallback((bprops) => {
+  const renderBuilder = useCallback(bprops => {
     memo._actions = bprops.actions;
     return (
       <div className="query-builder-container" style={{ padding: "10px" }}>
@@ -294,10 +320,9 @@ const DemoQueryBuilder = () => {
     // eslint-disable-next-line
   }, []);
   const onChange = useCallback((immutableTree, config, actionMeta) => {
-    console.log('config: ', config);
-    console.log('immutableTree: ', immutableTree);
-    if (actionMeta)
-      console.info(actionMeta);
+    console.log("config: ", config);
+    console.log("immutableTree: ", immutableTree);
+    if (actionMeta) console.info(actionMeta);
     memo.immutableTree = immutableTree;
     memo.config = config;
     updateResult();
@@ -305,99 +330,102 @@ const DemoQueryBuilder = () => {
   }, []);
 
   const updateResult = throttle(() => {
-    setState(prevState => ({ ...prevState, tree: memo.immutableTree, config: memo.config }));
+    setState(prevState => ({
+      ...prevState,
+      tree: memo.immutableTree,
+      config: memo.config,
+    }));
   }, 100);
 
-  const handleFactChange = (factObjId) => {
-    clearValue()
+  const handleFactChange = factObjId => {
+    clearValue();
     // setReturnList([])
-    form.setFieldValue('simpleResultPropertyId', void 0)
-    form.setFieldValue('simpleRuleValue', void 0)
-    setReturnValueList([])
-    fetchFields(factObjId)
-  }
+    form.setFieldValue("simpleResultPropertyId", void 0);
+    form.setFieldValue("simpleRuleValue", void 0);
+    setReturnValueList([]);
+    fetchFields(factObjId);
+  };
 
-  const onChangeReturn = async (val) => {
-    const type = form.getFieldValue('simpleRuleValueType')
-    if (type === 'select') {
+  const onChangeReturn = async val => {
+    const type = form.getFieldValue("simpleRuleValueType");
+    if (type === "select") {
       // select
-      form.setFieldValue('simpleRuleValue', void 0)
-      setReturnValueList([])
+      form.setFieldValue("simpleRuleValue", void 0);
+      setReturnValueList([]);
     } else {
       // text
-      form.setFieldValue('simpleResultPropertyId', void 0)
-      form.setFieldValue('simpleRuleValue', void 0)
+      form.setFieldValue("simpleResultPropertyId", void 0);
+      form.setFieldValue("simpleRuleValue", void 0);
     }
-    setValueType(type)
-  }
+    setValueType(type);
+  };
 
-  const onChangeReturnAttr = async (id) => {
+  const onChangeReturnAttr = async id => {
     try {
-      form.setFieldValue('simpleRuleValue', void 0)
-      const { data } = await fetchAttrDetails({ id })
+      form.setFieldValue("simpleRuleValue", void 0);
+      const { data } = await fetchAttrDetails({ id });
       if (data.fromType === 2) {
         // 配置属性源
         const { data: arr } = await fetchQueryPropertyUrlData({
           valueUrl: data.valueUrl,
-          requestBody: data.requestBody
-        })
+          requestBody: data.requestBody,
+        });
         const list = arr.map(v => ({
           value: String(v.value),
-          label: v.label
-        }))
-        setReturnValueList(list)
+          label: v.label,
+        }));
+        setReturnValueList(list);
       } else if (data.fromType === 1) {
         // 配置属性值
         const list = data.valueList.map(v => ({
           value: String(v.code),
-          label: v.value
-        }))
-        setReturnValueList(list)
+          label: v.value,
+        }));
+        setReturnValueList(list);
       }
-    } catch (error) {
-    }
-  }
+    } catch (error) {}
+  };
 
   const fetchFields = async (factObjId, spel) => {
     try {
-      const { data } = await fetchRulesFactOne({ factObjId, ruleId })
+      const { data } = await fetchRulesFactOne({ factObjId, ruleId });
 
-      setFormulaList(factFormulaList(data))
+      setFormulaList(factFormulaList(data));
 
       const stateObj = {
         ...state,
-      }
-      const { config } = state
-      config.fields = factFields(data)
+      };
+      const { config } = state;
+      config.fields = factFields(data);
       if (spel) {
         const [tree, spelErrors] = loadFromSpel(spel, config);
-        stateObj['tree'] = tree ? checkTree(tree, config) : state.tree
-        console.log('stateObj: ', stateObj);
-        stateObj['spelErrors'] = spelErrors
-        initTree = stateObj['tree']
+        stateObj["tree"] = tree ? checkTree(tree, config) : state.tree;
+        console.log("stateObj: ", stateObj);
+        stateObj["spelErrors"] = spelErrors;
+        initTree = stateObj["tree"];
       }
-      stateObj['config'] = config
-      setState(stateObj)
+      stateObj["config"] = config;
+      setState(stateObj);
 
-      const { data: { list = [] } } = await fetchAttrList({
+      const {
+        data: { list = [] },
+      } = await fetchAttrList({
         onlySelect: true,
         pageNum: 1,
         pageSize: 9999,
-        type: 2
-      })
+        type: 2,
+      });
       const arr = list.map(v => ({
         label: v.name,
-        value: v.id
-      }))
-      setReturnList(arr)
-
-    } catch (error) {
-    }
-  }
+        value: v.id,
+      }));
+      setReturnList(arr);
+    } catch (error) {}
+  };
 
   const jumpBack = () => {
-    navigate(-1)
-  }
+    navigate(-1);
+  };
 
   const renderResult = ({ tree: immutableTree, config }) => {
     const isValid = isValidTree(immutableTree);
@@ -409,14 +437,12 @@ const DemoQueryBuilder = () => {
         <br />
         <div>
           表达式:
-          {spelErrors.length > 0
-            && <pre style={preErrorStyle}>
+          {spelErrors.length > 0 && (
+            <pre style={preErrorStyle}>
               {stringify(spelErrors, undefined, 2)}
             </pre>
-          }
-          <pre style={preStyle}>
-            {stringify(spel, undefined, 2)}
-          </pre>
+          )}
+          <pre style={preStyle}>{stringify(spel, undefined, 2)}</pre>
         </div>
         {/* <hr/>
       <div>
@@ -430,86 +456,95 @@ const DemoQueryBuilder = () => {
   };
 
   const setReturnValue = ({ formula, formulaText }) => {
-    console.log('formulaText: ', formulaText);
-    console.log('formula: ', formula);
+    console.log("formulaText: ", formulaText);
+    console.log("formula: ", formula);
     if (formula) {
-      setSimpleRuleValue(formula)
+      setSimpleRuleValue(formula);
     }
     if (formulaText) {
-      setFormulaText(formulaText)
-    }
-  }
-
-  const onFinish = async (values) => {
-    const { tree: immutableTree, config } = state
-    const [spel] = _spelFormat(immutableTree, config)
-    if (!spel) {
-      message.error('请配置至少一条规则')
-      return
-    }
-    try {
-      const params = JSON.parse(JSON.stringify({
-        ...values,
-        sceneCode,
-        expression: spel
-      }))
-      if (!isCopy && ruleId) {
-        params['id'] = ruleId
-      }
-      if (formulaText) {
-        params['formulaText'] = formulaText
-      }
-      if (Array.isArray(params.simpleRuleValue)) {
-        params.simpleRuleValue = params.simpleRuleValue.join(',')
-      }
-      if (valueType === 'json') {
-        try {
-          params.simpleRuleValue = JSON.stringify(JSON.parse(params.simpleRuleValue))
-        } catch (error) {
-          message.error('格式化失败, 请检查需要格式化的文本')
-          return
-        }
-      }
-      console.log('params: ', params);
-      await saveRules(params)
-      message.success('操作成功')
-    } catch (error) {
+      setFormulaText(formulaText);
     }
   };
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+
+  const onFinish = async values => {
+    const { tree: immutableTree, config } = state;
+    const [spel] = _spelFormat(immutableTree, config);
+    if (!spel) {
+      message.error("请配置至少一条规则");
+      return;
+    }
+    try {
+      const params = JSON.parse(
+        JSON.stringify({
+          ...values,
+          sceneCode,
+          expression: spel,
+        })
+      );
+      if (!isCopy && ruleId) {
+        params["id"] = ruleId;
+      }
+      if (formulaText) {
+        params["formulaText"] = formulaText;
+      }
+      if (Array.isArray(params.simpleRuleValue)) {
+        params.simpleRuleValue = params.simpleRuleValue.join(",");
+      }
+      if (valueType === "json") {
+        try {
+          params.simpleRuleValue = JSON.stringify(
+            JSON.parse(params.simpleRuleValue)
+          );
+        } catch (error) {
+          message.error("格式化失败, 请检查需要格式化的文本");
+          return;
+        }
+      }
+      console.log("params: ", params);
+      await saveRules(params);
+      message.success("操作成功");
+    } catch (error) {}
+  };
+  const onFinishFailed = errorInfo => {
+    console.log("Failed:", errorInfo);
   };
 
   const checkValueFormat = () => {
-    const value = form.getFieldValue('simpleRuleValue')
+    const value = form.getFieldValue("simpleRuleValue");
     if (!value) {
-      message.error('请输入返回结果后校验！')
-      return
+      message.error("请输入返回结果后校验！");
+      return;
     }
     try {
-      const formattedJson = JSON.stringify(JSON.parse(value), null, 2)
-      form.setFieldValue('simpleRuleValue', formattedJson)
+      const formattedJson = JSON.stringify(JSON.parse(value), null, 2);
+      form.setFieldValue("simpleRuleValue", formattedJson);
     } catch (error) {
-      console.log('errorJson: ', error);
-      message.error('格式化失败, 请检查需要格式化的文本')
+      console.log("errorJson: ", error);
+      message.error("格式化失败, 请检查需要格式化的文本");
     }
-  }
+  };
 
   const showModal = () => {
     setIsModalOpen(true);
   };
 
   const filterOption = (input, option) =>
-    (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+    (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   const renderBox = () => {
     return (
       <div>
         <div>
           <Button onClick={resetValue}>重置</Button>
-          <Button className="btn-margin" onClick={clearValue}>清空</Button>
-          <Button className="btn-margin" onClick={validate}>校验</Button>
-          <Button className="btn-margin" onClick={switchShowLock}>显示锁定: {state.config.settings.showLock ? "显示" : "隐藏"}</Button>
+          <Button className="btn-margin" onClick={clearValue}>
+            清空
+          </Button>
+          <Button className="btn-margin" onClick={validate}>
+            校验
+          </Button>
+          <Button className="btn-margin" onClick={switchShowLock}>
+            显示锁定: {state.config.settings.showLock ? "显示" : "隐藏"}
+          </Button>
         </div>
 
         <Query
@@ -520,48 +555,51 @@ const DemoQueryBuilder = () => {
         />
 
         <div className="query-import-spel">
-          <input className="query-import-input" type="text" value={state.spelStr} onChange={onChangeSpelStr} />
+          <input
+            className="query-import-input"
+            type="text"
+            value={state.spelStr}
+            onChange={onChangeSpelStr}
+          />
           <Button onClick={importFromSpel}>导入规则</Button>
           <br />
-          {state.spelErrors.length > 0
-            && <pre style={preErrorStyle}>
+          {state.spelErrors.length > 0 && (
+            <pre style={preErrorStyle}>
               {stringify(state.spelErrors, undefined, 2)}
             </pre>
-          }
+          )}
         </div>
 
-        <div className="query-builder-result">
-          {renderResult(state)}
-        </div>
+        <div className="query-builder-result">{renderResult(state)}</div>
       </div>
-    )
-  }
+    );
+  };
 
   const renderFormula = () => {
-    let dom
-    if (valueType === 'formula') {
+    let dom;
+    if (valueType === "formula") {
       dom = (
         <Button type="primary" className="formula" onClick={showModal}>
           配置公式
         </Button>
-      )
+      );
     }
-    return dom
-  }
+    return dom;
+  };
 
   const renderJsonPre = () => {
-    let dom
-    if (valueType === 'json') {
+    let dom;
+    if (valueType === "json") {
       dom = (
         <>
           <Button type="primary" className="formula" onClick={checkValueFormat}>
             格式化
           </Button>
         </>
-      )
+      );
     }
-    return dom
-  }
+    return dom;
+  };
 
   const renderReturnField = () => {
     let dom = (
@@ -571,16 +609,14 @@ const DemoQueryBuilder = () => {
         rules={[
           {
             required: true,
-            message: '请输入返回结果',
+            message: "请输入返回结果",
           },
         ]}
       >
-        <Input
-          disabled={valueType === 'formula'}
-        />
+        <Input disabled={valueType === "formula"} />
       </Form.Item>
-    )
-    if (valueType === 'json' || valueType === 'groovyScript') {
+    );
+    if (valueType === "json" || valueType === "groovyScript") {
       dom = (
         <Form.Item
           label="返回结果"
@@ -588,16 +624,14 @@ const DemoQueryBuilder = () => {
           rules={[
             {
               required: true,
-              message: '请输入返回结果',
+              message: "请输入返回结果",
             },
           ]}
         >
-          <TextArea
-            autoSize={{ minRows: 4, maxRows: 30 }}
-          />
+          <TextArea autoSize={{ minRows: 4, maxRows: 30 }} />
         </Form.Item>
-      )
-    } else if (valueType === 'select') {
+      );
+    } else if (valueType === "select") {
       dom = (
         <>
           <Form.Item
@@ -606,7 +640,7 @@ const DemoQueryBuilder = () => {
             rules={[
               {
                 required: true,
-                message: '请选择返回结果属性',
+                message: "请选择返回结果属性",
               },
             ]}
           >
@@ -625,7 +659,7 @@ const DemoQueryBuilder = () => {
             rules={[
               {
                 required: true,
-                message: '请选择返回结果',
+                message: "请选择返回结果",
               },
             ]}
           >
@@ -641,11 +675,11 @@ const DemoQueryBuilder = () => {
             />
           </Form.Item>
         </>
-      )
+      );
     }
 
-    return dom
-  }
+    return dom;
+  };
 
   return (
     <div className="query-wrap">
@@ -656,7 +690,7 @@ const DemoQueryBuilder = () => {
             priority: 0,
             enable: true,
             status: true,
-            simpleRuleValueType: 'text',
+            simpleRuleValueType: "text",
           }}
           form={form}
           labelAlign="left"
@@ -667,15 +701,15 @@ const DemoQueryBuilder = () => {
         >
           <Form.Item
             label="规则名称"
-            name="ruleName"
+            name="sceneName"
             rules={[
               {
                 required: true,
-                message: '请输入规则名称',
+                message: "请输入规则名称",
               },
             ]}
           >
-            <Input />
+            <Input disabled />
           </Form.Item>
 
           <Form.Item
@@ -685,7 +719,7 @@ const DemoQueryBuilder = () => {
             rules={[
               {
                 required: true,
-                message: '请选择是否启用',
+                message: "请选择是否启用",
               },
             ]}
           >
@@ -698,7 +732,7 @@ const DemoQueryBuilder = () => {
             rules={[
               {
                 required: true,
-                message: '请输入优先级',
+                message: "请输入优先级",
               },
             ]}
           >
@@ -717,7 +751,7 @@ const DemoQueryBuilder = () => {
             rules={[
               {
                 required: true,
-                message: '请选择事实对象',
+                message: "请选择事实对象",
               },
             ]}
           >
@@ -738,7 +772,7 @@ const DemoQueryBuilder = () => {
             rules={[
               {
                 required: true,
-                message: '请选择返回结果类型',
+                message: "请选择返回结果类型",
               },
             ]}
           >
@@ -749,24 +783,24 @@ const DemoQueryBuilder = () => {
               onChange={onChangeReturn}
               options={[
                 {
-                  value: 'text',
-                  label: '文本',
+                  value: "text",
+                  label: "文本",
                 },
                 {
-                  value: 'select',
-                  label: 'Select',
+                  value: "select",
+                  label: "Select",
                 },
                 {
-                  value: 'formula',
-                  label: '公式计算',
+                  value: "formula",
+                  label: "公式计算",
                 },
                 {
-                  value: 'json',
-                  label: 'JSON',
+                  value: "json",
+                  label: "JSON",
                 },
                 {
-                  value: 'groovyScript',
-                  label: 'GroovyScript',
+                  value: "groovyScript",
+                  label: "GroovyScript",
                 },
               ]}
             />
@@ -777,7 +811,6 @@ const DemoQueryBuilder = () => {
           {renderReturnField()}
 
           {renderJsonPre()}
-
 
           <Form.Item>
             <Button type="primary" htmlType="submit">
@@ -801,6 +834,5 @@ const DemoQueryBuilder = () => {
     </div>
   );
 };
-
 
 export default DemoQueryBuilder;

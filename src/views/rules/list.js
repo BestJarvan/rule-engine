@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Input, InputNumber, Select, message } from "antd";
+import { Button, Form, Input, InputNumber, Select, Spin, message } from "antd";
 import { useSearchParams } from "react-router-dom";
 import { Utils } from "@bestjarvan/helper-rule-engine";
 import loadConfig from "./config";
@@ -58,6 +58,7 @@ const DemoQueryBuilder = () => {
   });
 
   const [factList, setFactList] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [returnList, setReturnList] = useState([]);
   const [returnValueList, setReturnValueList] = useState([]);
 
@@ -173,6 +174,7 @@ const DemoQueryBuilder = () => {
           rules: [],
         });
       }
+      setLoading(false);
     } catch (error) {}
   };
 
@@ -462,71 +464,73 @@ const DemoQueryBuilder = () => {
   return (
     <div className="query-wrap">
       <div className="query-form">
-        <Form
-          name="basic"
-          initialValues={{
-            status: true,
-            rules: [
-              {
-                priority: 0,
-                simpleRuleValueType: "select",
-              },
-            ],
-          }}
-          form={form}
-          labelAlign="left"
-          labelCol={{ style: { width: 120 } }}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <Form.Item
-            label="规则名称"
-            name="sceneName"
-            disabled
-            rules={[
-              {
-                required: true,
-                message: "请输入规则名称",
-              },
-            ]}
+        <Spin spinning={loading}>
+          <Form
+            name="basic"
+            initialValues={{
+              status: true,
+              rules: [
+                {
+                  priority: 0,
+                  simpleRuleValueType: "select",
+                },
+              ],
+            }}
+            form={form}
+            labelAlign="left"
+            labelCol={{ style: { width: 120 } }}
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off"
           >
-            <Input disabled />
-          </Form.Item>
+            <Form.Item
+              label="规则名称"
+              name="sceneName"
+              disabled
+              rules={[
+                {
+                  required: true,
+                  message: "请输入规则名称",
+                },
+              ]}
+            >
+              <Input disabled />
+            </Form.Item>
 
-          <Form.Item
-            label="事实对象"
-            name="factObjId"
-            rules={[
-              {
-                required: true,
-                message: "请选择事实对象",
-              },
-            ]}
-          >
-            <Select
-              style={{
-                width: 220,
-              }}
-              onChange={handleFactChange}
-              options={factList}
-            />
-          </Form.Item>
+            <Form.Item
+              label="事实对象"
+              name="factObjId"
+              rules={[
+                {
+                  required: true,
+                  message: "请选择事实对象",
+                },
+              ]}
+            >
+              <Select
+                style={{
+                  width: 220,
+                }}
+                onChange={handleFactChange}
+                options={factList}
+              />
+            </Form.Item>
 
-          {renderBox()}
+            {renderBox()}
 
-          <Form.Item>
-            <Button type="primary" onClick={handleAddOne}>
-              新增条件
-            </Button>
-          </Form.Item>
+            <Form.Item>
+              <Button type="primary" onClick={handleAddOne}>
+                新增条件
+              </Button>
+            </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              保存
-            </Button>
-          </Form.Item>
-        </Form>
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                保存
+              </Button>
+            </Form.Item>
+          </Form>
+        </Spin>
       </div>
     </div>
   );

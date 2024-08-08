@@ -1,14 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  message,
-  Switch,
-} from "antd";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { Button, Form, Input, InputNumber, Select, message } from "antd";
+import { useSearchParams } from "react-router-dom";
 import { Utils } from "@bestjarvan/helper-rule-engine";
 import loadConfig from "./config";
 import {
@@ -44,7 +36,6 @@ window.dispatchEvent(updateEvent);
 const DemoQueryBuilder = () => {
   const [form] = Form.useForm();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const sceneCode = searchParams.get("scene");
   const sceneName = searchParams.get("name");
 
@@ -186,12 +177,16 @@ const DemoQueryBuilder = () => {
   };
 
   const clearValue = () => {
-    setState([
+    console.log("memo: ", memo);
+    console.log("state22", state);
+    const arr = [
       {
         ...memo,
-        tree: initTree,
+        tree: loadTree(emptyInitValue),
       },
-    ]);
+    ];
+    console.log(arr, "1231231");
+    setState([...arr]);
   };
 
   const handleFactChange = factObjId => {
@@ -262,6 +257,7 @@ const DemoQueryBuilder = () => {
 
       const { config } = memo;
       config.fields = factFields(data);
+      console.log("config222: ", config);
       if (spelArr?.length) {
         spelArr.forEach(v => {
           const stateObj = {
@@ -282,12 +278,15 @@ const DemoQueryBuilder = () => {
         setState([...rules]);
 
         form.setFieldValue("rules", spelArr);
+      } else {
+        const stateObj = {
+          ...memo,
+          id: uuid(),
+        };
+        stateObj["config"] = config;
+        setState([stateObj]);
       }
     } catch (error) {}
-  };
-
-  const jumpBack = () => {
-    navigate(-1);
   };
 
   const onFinish = async values => {
@@ -330,13 +329,6 @@ const DemoQueryBuilder = () => {
     console.log("Failed:", errorInfo);
   };
 
-  const onDelete = index => {
-    setState(prevState => {
-      prevState.splice(index, 1);
-      return [...prevState];
-    });
-  };
-
   const onUpdateState = ({ state: v, index }) => {
     setState(prevState => {
       prevState[index] = {
@@ -357,6 +349,7 @@ const DemoQueryBuilder = () => {
             <>
               {fields.map((v, i) => {
                 const stateItem = state[i];
+                console.log("stateItem: ", stateItem);
                 return (
                   <div className="rule-wrap" key={stateItem.id}>
                     <Rule
@@ -455,13 +448,23 @@ const DemoQueryBuilder = () => {
     form.setFieldValue("rules", rules);
   };
 
+  const onDelete = index => {
+    setState(prevState => {
+      prevState.splice(index, 1);
+      return [...prevState];
+    });
+
+    const rules = form.getFieldValue("rules");
+    rules.splice(index, 1);
+    form.setFieldValue("rules", rules);
+  };
+
   return (
     <div className="query-wrap">
       <div className="query-form">
         <Form
           name="basic"
           initialValues={{
-            enable: true,
             status: true,
             rules: [
               {
@@ -489,20 +492,6 @@ const DemoQueryBuilder = () => {
             ]}
           >
             <Input disabled />
-          </Form.Item>
-
-          <Form.Item
-            label="是否启用"
-            name="enable"
-            valuePropName="checked"
-            rules={[
-              {
-                required: true,
-                message: "请选择是否启用",
-              },
-            ]}
-          >
-            <Switch checkedChildren="启用" unCheckedChildren="禁用" />
           </Form.Item>
 
           <Form.Item
@@ -535,9 +524,6 @@ const DemoQueryBuilder = () => {
           <Form.Item>
             <Button type="primary" htmlType="submit">
               保存
-            </Button>
-            <Button className="btn-margin" onClick={jumpBack}>
-              返回
             </Button>
           </Form.Item>
         </Form>

@@ -297,7 +297,7 @@ const DemoQueryBuilder = () => {
         ...values.rules[i],
       };
       if (map[item.priority]) {
-        message.error(`优先级-${item.priority}, 不能重复!`);
+        message.error(`优先级[${item.priority}], 不能重复!`);
         return;
       } else {
         map[item.priority] = true;

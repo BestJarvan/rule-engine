@@ -179,15 +179,12 @@ const DemoQueryBuilder = () => {
   };
 
   const clearValue = () => {
-    console.log("memo: ", memo);
-    console.log("state22", state);
     const arr = [
       {
         ...memo,
         tree: loadTree(emptyInitValue),
       },
     ];
-    console.log(arr, "1231231");
     setState([...arr]);
   };
 
@@ -259,7 +256,6 @@ const DemoQueryBuilder = () => {
 
       const { config } = memo;
       config.fields = factFields(data);
-      console.log("config222: ", config);
       if (spelArr?.length) {
         spelArr.forEach(v => {
           const stateObj = {
@@ -293,12 +289,22 @@ const DemoQueryBuilder = () => {
 
   const onFinish = async values => {
     const spelArr = [];
+    const map = {};
     for (let i = 0; i < state.length; i++) {
       const { tree: immutableTree, config } = state[i];
       const [spel] = _spelFormat(immutableTree, config);
+      const item = {
+        ...values.rules[i],
+      };
+      if (map[item.priority]) {
+        message.error(`优先级-${item.priority}, 不能重复!`);
+        return;
+      } else {
+        map[item.priority] = true;
+      }
       if (spel) {
         spelArr.push({
-          ...values.rules[i],
+          ...item,
           expression: spel,
         });
       } else {
@@ -351,7 +357,6 @@ const DemoQueryBuilder = () => {
             <>
               {fields.map((v, i) => {
                 const stateItem = state[i];
-                console.log("stateItem: ", stateItem);
                 return (
                   <div className="rule-wrap" key={stateItem.id}>
                     <Rule

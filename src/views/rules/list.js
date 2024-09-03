@@ -154,6 +154,7 @@ const DemoQueryBuilder = () => {
   const fetchRulesDetail = async () => {
     try {
       const { data } = await fetchAllRulesDetail({ sceneCode, sceneName });
+      data.sceneName = sceneName;
       if (!data.factObjId) {
         fetchFields(factList[0].value);
         form.setFieldsValue({

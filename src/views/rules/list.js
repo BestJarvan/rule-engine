@@ -38,6 +38,10 @@ const DemoQueryBuilder = () => {
   const [searchParams] = useSearchParams();
   const sceneCode = searchParams.get("scene");
   const sceneName = searchParams.get("name");
+  const factObjId = searchParams.get("factObjId");
+  console.log("factObjId: ", factObjId);
+  const simpleResultPropertyId = searchParams.get("simpleResultPropertyId");
+  console.log("simpleResultPropertyId: ", simpleResultPropertyId);
 
   const [state, setState] = useState([
     {
@@ -60,7 +64,7 @@ const DemoQueryBuilder = () => {
   const [factList, setFactList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [returnList, setReturnList] = useState([]);
-  const [returnValueList, setReturnValueList] = useState([]);
+  const [returnValueList, setReturnValueList] = useState([[]]);
 
   useEffect(() => {
     fetchAllRulesObj();
@@ -156,13 +160,17 @@ const DemoQueryBuilder = () => {
       const { data } = await fetchAllRulesDetail({ sceneCode, sceneName });
       data.sceneName = sceneName;
       if (!data.factObjId) {
-        fetchFields(factList[0].value);
+        const id = factObjId || factList[0].value;
+        fetchFields(id);
+        simpleResultPropertyId &&
+          onChangeReturnAttr(simpleResultPropertyId, 0, true);
         form.setFieldsValue({
-          factObjId: factList[0].value,
+          factObjId: id,
           sceneName,
           rules: [
             {
               priority: 0,
+              simpleResultPropertyId: simpleResultPropertyId || "",
               simpleRuleValueType: "select",
             },
           ],
@@ -197,11 +205,12 @@ const DemoQueryBuilder = () => {
         simpleRuleValueType: "select",
       },
     ]);
-    setReturnValueList([]);
+    setReturnValueList([[]]);
     fetchFields(factObjId);
   };
 
   const onChangeReturnAttr = async (id, index, flag = false) => {
+    console.log("index: ", index);
     try {
       const rules = form.getFieldValue("rules");
       if (!flag) {
@@ -219,14 +228,20 @@ const DemoQueryBuilder = () => {
           value: String(v.value),
           label: v.label,
         }));
-        setReturnValueList(list);
+        const res = [...returnValueList];
+        res[index] = list;
+        console.log("res11: ", res);
+        setReturnValueList(res);
       } else if (data.fromType === 1) {
         // 配置属性值
         const list = data.valueList.map(v => ({
           value: String(v.code),
           label: v.value,
         }));
-        setReturnValueList(list);
+        const res = [...returnValueList];
+        res[index] = list;
+        console.log("res22: ", res);
+        setReturnValueList(res);
       }
     } catch (error) {}
   };
@@ -258,7 +273,7 @@ const DemoQueryBuilder = () => {
       const { config } = memo;
       config.fields = factFields(data);
       if (spelArr?.length) {
-        spelArr.forEach(v => {
+        spelArr.forEach((v, i) => {
           const stateObj = {
             ...memo,
             id: uuid(),
@@ -271,7 +286,7 @@ const DemoQueryBuilder = () => {
           rules.push(stateObj);
 
           v.simpleResultPropertyId &&
-            onChangeReturnAttr(v.simpleResultPropertyId, null, true);
+            onChangeReturnAttr(v.simpleResultPropertyId, i, true);
           v.simpleRuleValue = v.simpleRuleValue.split(",");
         });
         setState([...rules]);
@@ -424,7 +439,7 @@ const DemoQueryBuilder = () => {
                           style={{
                             width: 500,
                           }}
-                          options={returnValueList}
+                          options={returnValueList[i]}
                         />
                       </Form.Item>
                     </div>
@@ -447,10 +462,13 @@ const DemoQueryBuilder = () => {
     });
 
     setState([...arr]);
+    simpleResultPropertyId &&
+      onChangeReturnAttr(simpleResultPropertyId, arr.length - 1, true);
 
     const rules = form.getFieldValue("rules");
     rules.push({
       priority: 0,
+      simpleResultPropertyId: simpleResultPropertyId || "",
       simpleRuleValueType: "select",
     });
     form.setFieldValue("rules", rules);

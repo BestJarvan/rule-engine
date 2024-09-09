@@ -8,7 +8,8 @@ import {
   message,
   Switch,
 } from "antd";
-import { useSearchParams, useNavigate } from "react-router-dom";
+// useNavigate
+import { useSearchParams } from "react-router-dom";
 import { Query, Builder, Utils } from "@bestjarvan/helper-rule-engine";
 import throttle from "lodash/throttle";
 import loadConfig from "./config";
@@ -70,7 +71,7 @@ const DemoQueryBuilder = () => {
   const memo = {};
   const [form] = Form.useForm();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const isEdit = searchParams.get("type") !== "add";
   const isCopy = searchParams.get("type") === "copy";
   const sceneCode = searchParams.get("scene");
@@ -422,9 +423,9 @@ const DemoQueryBuilder = () => {
     } catch (error) {}
   };
 
-  const jumpBack = () => {
-    navigate(-1);
-  };
+  // const jumpBack = () => {
+  //   navigate(-1);
+  // };
 
   const renderResult = ({ tree: immutableTree, config }) => {
     const isValid = isValidTree(immutableTree);
@@ -815,9 +816,9 @@ const DemoQueryBuilder = () => {
             <Button type="primary" htmlType="submit">
               保存
             </Button>
-            <Button className="btn-margin" onClick={jumpBack}>
+            {/* <Button className="btn-margin" onClick={jumpBack}>
               返回
-            </Button>
+            </Button> */}
           </Form.Item>
         </Form>
       </div>

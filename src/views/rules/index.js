@@ -7,6 +7,7 @@ import {
   Select,
   message,
   Switch,
+  Spin,
 } from "antd";
 // useNavigate
 import { useSearchParams } from "react-router-dom";
@@ -76,6 +77,7 @@ const DemoQueryBuilder = () => {
   const isCopy = searchParams.get("type") === "copy";
   const sceneCode = searchParams.get("scene");
   const ruleId = searchParams.get("id");
+  const [loading, setLoading] = useState(true);
 
   const [state, setState] = useState({
     tree: initTree,
@@ -420,6 +422,7 @@ const DemoQueryBuilder = () => {
         value: v.id,
       }));
       setReturnList(arr);
+      setLoading(false);
     } catch (error) {}
   };
 
@@ -684,143 +687,145 @@ const DemoQueryBuilder = () => {
   return (
     <div className="query-wrap">
       <div className="query-form">
-        <Form
-          name="basic"
-          initialValues={{
-            priority: 0,
-            enable: true,
-            status: true,
-            simpleRuleValueType: "text",
-          }}
-          form={form}
-          labelAlign="left"
-          labelCol={{ style: { width: 120 } }}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <Form.Item
-            label="规则名称"
-            name="ruleName"
-            rules={[
-              {
-                required: true,
-                message: "请输入规则名称",
-              },
-            ]}
+        <Spin spinning={loading}>
+          <Form
+            name="basic"
+            initialValues={{
+              priority: 0,
+              enable: true,
+              status: true,
+              simpleRuleValueType: "text",
+            }}
+            form={form}
+            labelAlign="left"
+            labelCol={{ style: { width: 120 } }}
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off"
           >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="是否启用"
-            name="enable"
-            valuePropName="checked"
-            rules={[
-              {
-                required: true,
-                message: "请选择是否启用",
-              },
-            ]}
-          >
-            <Switch checkedChildren="启用" unCheckedChildren="禁用" />
-          </Form.Item>
-
-          <Form.Item
-            label="优先级"
-            name="priority"
-            rules={[
-              {
-                required: true,
-                message: "请输入优先级",
-              },
-            ]}
-          >
-            <InputNumber
-              style={{
-                width: 220,
-              }}
-              min={0}
-              max={999}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="事实对象"
-            name="factObjId"
-            rules={[
-              {
-                required: true,
-                message: "请选择事实对象",
-              },
-            ]}
-          >
-            <Select
-              style={{
-                width: 220,
-              }}
-              onChange={handleFactChange}
-              options={factList}
-            />
-          </Form.Item>
-
-          {renderBox()}
-
-          <Form.Item
-            label="返回结果类型"
-            name="simpleRuleValueType"
-            rules={[
-              {
-                required: true,
-                message: "请选择返回结果类型",
-              },
-            ]}
-          >
-            <Select
-              style={{
-                width: 220,
-              }}
-              onChange={onChangeReturn}
-              options={[
+            <Form.Item
+              label="规则名称"
+              name="ruleName"
+              rules={[
                 {
-                  value: "text",
-                  label: "文本",
-                },
-                {
-                  value: "select",
-                  label: "Select",
-                },
-                {
-                  value: "formula",
-                  label: "公式计算",
-                },
-                {
-                  value: "json",
-                  label: "JSON",
-                },
-                {
-                  value: "groovyScript",
-                  label: "GroovyScript",
+                  required: true,
+                  message: "请输入规则名称",
                 },
               ]}
-            />
-          </Form.Item>
+            >
+              <Input />
+            </Form.Item>
 
-          {renderFormula()}
+            <Form.Item
+              label="是否启用"
+              name="enable"
+              valuePropName="checked"
+              rules={[
+                {
+                  required: true,
+                  message: "请选择是否启用",
+                },
+              ]}
+            >
+              <Switch checkedChildren="启用" unCheckedChildren="禁用" />
+            </Form.Item>
 
-          {renderReturnField()}
+            <Form.Item
+              label="优先级"
+              name="priority"
+              rules={[
+                {
+                  required: true,
+                  message: "请输入优先级",
+                },
+              ]}
+            >
+              <InputNumber
+                style={{
+                  width: 220,
+                }}
+                min={0}
+                max={999}
+              />
+            </Form.Item>
 
-          {renderJsonPre()}
+            <Form.Item
+              label="事实对象"
+              name="factObjId"
+              rules={[
+                {
+                  required: true,
+                  message: "请选择事实对象",
+                },
+              ]}
+            >
+              <Select
+                style={{
+                  width: 220,
+                }}
+                onChange={handleFactChange}
+                options={factList}
+              />
+            </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              保存
-            </Button>
-            {/* <Button className="btn-margin" onClick={jumpBack}>
+            {renderBox()}
+
+            <Form.Item
+              label="返回结果类型"
+              name="simpleRuleValueType"
+              rules={[
+                {
+                  required: true,
+                  message: "请选择返回结果类型",
+                },
+              ]}
+            >
+              <Select
+                style={{
+                  width: 220,
+                }}
+                onChange={onChangeReturn}
+                options={[
+                  {
+                    value: "text",
+                    label: "文本",
+                  },
+                  {
+                    value: "select",
+                    label: "Select",
+                  },
+                  {
+                    value: "formula",
+                    label: "公式计算",
+                  },
+                  {
+                    value: "json",
+                    label: "JSON",
+                  },
+                  {
+                    value: "groovyScript",
+                    label: "GroovyScript",
+                  },
+                ]}
+              />
+            </Form.Item>
+
+            {renderFormula()}
+
+            {renderReturnField()}
+
+            {renderJsonPre()}
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                保存
+              </Button>
+              {/* <Button className="btn-margin" onClick={jumpBack}>
               返回
             </Button> */}
-          </Form.Item>
-        </Form>
+            </Form.Item>
+          </Form>
+        </Spin>
       </div>
 
       <FormulaModal

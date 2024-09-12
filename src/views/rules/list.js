@@ -163,7 +163,11 @@ const DemoQueryBuilder = () => {
         const id = factObjId || factList[0].value;
         fetchFields(id);
         simpleResultPropertyId &&
-          onChangeReturnAttr(simpleResultPropertyId, 0, true);
+          onChangeReturnAttr({
+            id: simpleResultPropertyId,
+            index: 0,
+            flag: true,
+          });
         form.setFieldsValue({
           factObjId: id,
           sceneName,
@@ -209,7 +213,13 @@ const DemoQueryBuilder = () => {
     fetchFields(factObjId);
   };
 
-  const onChangeReturnAttr = async (id, index, flag = false) => {
+  const onChangeReturnAttr = async ({
+    id,
+    index,
+    flag = false,
+    returnList,
+    spelLength,
+  }) => {
     console.log("index: ", index);
     try {
       const rules = form.getFieldValue("rules");
@@ -218,7 +228,7 @@ const DemoQueryBuilder = () => {
         form.setFieldValue("rules", rules);
       }
       const { data } = await fetchAttrDetails({ id });
-      if (data.fromType === 2) {
+      if (data.fromType === 2 && !data.valueList?.length) {
         // 配置属性源
         const { data: arr } = await fetchQueryPropertyUrlData({
           valueUrl: data.valueUrl,
@@ -228,20 +238,33 @@ const DemoQueryBuilder = () => {
           value: String(v.value),
           label: v.label,
         }));
-        const res = [...returnValueList];
-        res[index] = list;
-        console.log("res11: ", res);
-        setReturnValueList(res);
-      } else if (data.fromType === 1) {
+
+        if (!returnList) {
+          const res = [...returnValueList];
+          res[index] = list;
+          setReturnValueList(res);
+        } else {
+          returnList[index] = list;
+        }
+        if (index === spelLength - 1) {
+          setReturnValueList(returnList);
+        }
+      } else if (data.fromType === 1 || data.valueList?.length) {
         // 配置属性值
         const list = data.valueList.map(v => ({
           value: String(v.code),
           label: v.value,
         }));
-        const res = [...returnValueList];
-        res[index] = list;
-        console.log("res22: ", res);
-        setReturnValueList(res);
+        if (!returnList) {
+          const res = [...returnValueList];
+          res[index] = list;
+          setReturnValueList(res);
+        } else {
+          returnList[index] = list;
+        }
+        if (index === spelLength - 1) {
+          setReturnValueList(returnList);
+        }
       }
     } catch (error) {}
   };
@@ -272,6 +295,7 @@ const DemoQueryBuilder = () => {
 
       const { config } = memo;
       config.fields = factFields(data);
+      const returnList = [...returnValueList];
       if (spelArr?.length) {
         spelArr.forEach((v, i) => {
           const stateObj = {
@@ -286,7 +310,13 @@ const DemoQueryBuilder = () => {
           rules.push(stateObj);
 
           v.simpleResultPropertyId &&
-            onChangeReturnAttr(v.simpleResultPropertyId, i, true);
+            onChangeReturnAttr({
+              id: v.simpleResultPropertyId,
+              index: i,
+              flag: true,
+              returnList,
+              spelLength: spelArr.length,
+            });
           v.simpleRuleValue = v.simpleRuleValue.split(",");
         });
         setState([...rules]);
@@ -415,7 +445,7 @@ const DemoQueryBuilder = () => {
                             width: 220,
                           }}
                           onChange={id => {
-                            onChangeReturnAttr(id, i);
+                            onChangeReturnAttr({ id, index: i });
                           }}
                           options={returnList}
                         />
@@ -463,7 +493,11 @@ const DemoQueryBuilder = () => {
 
     setState([...arr]);
     simpleResultPropertyId &&
-      onChangeReturnAttr(simpleResultPropertyId, arr.length - 1, true);
+      onChangeReturnAttr({
+        id: simpleResultPropertyId,
+        index: arr.length - 1,
+        falg: true,
+      });
 
     const rules = form.getFieldValue("rules");
     rules.push({

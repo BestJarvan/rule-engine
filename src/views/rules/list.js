@@ -180,7 +180,7 @@ const DemoQueryBuilder = () => {
 
         form.setFieldsValue({
           ...data,
-          rules: [],
+          rules: data.rules || [],
         });
       }
       setLoading(false);
@@ -475,6 +475,11 @@ const DemoQueryBuilder = () => {
   };
 
   const onDelete = index => {
+    if (state.length === 1) {
+      message.error("至少保留一条规则!");
+      return;
+    }
+
     setState(prevState => {
       prevState.splice(index, 1);
       return [...prevState];

@@ -180,7 +180,7 @@ const DemoQueryBuilder = () => {
 
         form.setFieldsValue({
           ...data,
-          rules: data.rules || [],
+          rules: [],
         });
       }
       setLoading(false);

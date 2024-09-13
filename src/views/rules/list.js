@@ -496,7 +496,7 @@ const DemoQueryBuilder = () => {
       onChangeReturnAttr({
         id: simpleResultPropertyId,
         index: arr.length - 1,
-        falg: true,
+        flag: true,
       });
 
     const rules = form.getFieldValue("rules");

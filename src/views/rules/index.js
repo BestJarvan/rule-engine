@@ -670,6 +670,7 @@ const DemoQueryBuilder = () => {
               mode="multiple"
               showArrow
               showSearch
+              placement="topLeft"
               filterOption={filterOption}
               style={{
                 width: 500,

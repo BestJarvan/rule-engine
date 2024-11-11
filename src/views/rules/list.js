@@ -38,7 +38,8 @@ const DemoQueryBuilder = () => {
   const [searchParams] = useSearchParams();
   const sceneCode = searchParams.get("scene");
   const sceneName = searchParams.get("name");
-  const subscribeAppList = searchParams.get("subscribeAppList")
+  const appList = searchParams.get("subscribeAppList")
+  const subscribeAppList = appList.split(",")
   const factObjId = searchParams.get("factObjId");
   console.log("factObjId: ", factObjId);
   const simpleResultPropertyId = searchParams.get("simpleResultPropertyId");
@@ -171,7 +172,6 @@ const DemoQueryBuilder = () => {
           });
         form.setFieldsValue({
           factObjId: id,
-          subscribeAppList,
           sceneName,
           rules: [
             {
@@ -186,7 +186,6 @@ const DemoQueryBuilder = () => {
 
         form.setFieldsValue({
           ...data,
-          subscribeAppList,
           rules: [],
         });
       }
@@ -367,6 +366,7 @@ const DemoQueryBuilder = () => {
         JSON.stringify({
           ...values,
           sceneCode,
+          subscribeAppList,
           rules: spelArr,
         })
       );

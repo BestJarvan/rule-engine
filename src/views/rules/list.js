@@ -39,7 +39,7 @@ const DemoQueryBuilder = () => {
   const sceneCode = searchParams.get("scene");
   const sceneName = searchParams.get("name");
   const appList = searchParams.get("subscribeAppList")
-  const subscribeAppList = appList.split(",")
+  const subscribeAppList = appList ? appList.split(",") : null
   const factObjId = searchParams.get("factObjId");
   console.log("factObjId: ", factObjId);
   const simpleResultPropertyId = searchParams.get("simpleResultPropertyId");

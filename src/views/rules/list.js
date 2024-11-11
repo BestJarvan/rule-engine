@@ -38,6 +38,7 @@ const DemoQueryBuilder = () => {
   const [searchParams] = useSearchParams();
   const sceneCode = searchParams.get("scene");
   const sceneName = searchParams.get("name");
+  const subscribeAppList = searchParams.get("subscribeAppList")
   const factObjId = searchParams.get("factObjId");
   console.log("factObjId: ", factObjId);
   const simpleResultPropertyId = searchParams.get("simpleResultPropertyId");
@@ -170,6 +171,7 @@ const DemoQueryBuilder = () => {
           });
         form.setFieldsValue({
           factObjId: id,
+          subscribeAppList,
           sceneName,
           rules: [
             {
@@ -184,6 +186,7 @@ const DemoQueryBuilder = () => {
 
         form.setFieldsValue({
           ...data,
+          subscribeAppList,
           rules: [],
         });
       }

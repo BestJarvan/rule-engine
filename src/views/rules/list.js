@@ -38,8 +38,8 @@ const DemoQueryBuilder = () => {
   const [searchParams] = useSearchParams();
   const sceneCode = searchParams.get("scene");
   const sceneName = searchParams.get("name");
-  const appList = searchParams.get("subscribeAppList")
-  const subscribeAppList = appList ? appList.split(",") : null
+  const appList = searchParams.get("subscribeAppList");
+  const subscribeAppList = appList ? appList.split(",") : null;
   const factObjId = searchParams.get("factObjId");
   console.log("factObjId: ", factObjId);
   const simpleResultPropertyId = searchParams.get("simpleResultPropertyId");
@@ -447,6 +447,12 @@ const DemoQueryBuilder = () => {
                           style={{
                             width: 220,
                           }}
+                          showSearch
+                          filterOption={(input, option) =>
+                            (option?.label ?? "")
+                              .toLowerCase()
+                              .includes(input.toLowerCase())
+                          }
                           onChange={id => {
                             onChangeReturnAttr({ id, index: i });
                           }}

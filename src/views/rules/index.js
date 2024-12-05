@@ -651,6 +651,12 @@ const DemoQueryBuilder = () => {
               style={{
                 width: 220,
               }}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
               onChange={onChangeReturnAttr}
               options={returnList}
             />

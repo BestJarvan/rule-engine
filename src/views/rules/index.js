@@ -766,6 +766,8 @@ const DemoQueryBuilder = () => {
                 style={{
                   width: 220,
                 }}
+                showSearch
+                filterOption={filterOption}
                 onChange={handleFactChange}
                 options={factList}
               />
